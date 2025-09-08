@@ -1,0 +1,28 @@
+[package]
+name = "corda-notary"
+version = "0.1.0"
+description = "Created with Anchor"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "corda_notary"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+
+[dependencies]
+anchor-lang = "0.31.1"
+hex = "0.4.3"
+
+[dev-dependencies]
+anchor-client = "0.31.1"
+rand = "0.9.1"
+litesvm = "0.6.1"
+rstest = "0.25.0"
+solana-sdk = "2.2.1"

@@ -1,0 +1,92 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'corda.common-publishing'
+}
+
+sourceSets {
+    codegen.java.srcDir("src/codegen/kotlin")
+    main.java.srcDir("$buildDir/generated/src/main/kotlin")
+}
+
+dependencies {
+    codegenImplementation project(':solana-aggregator:common')
+    codegenImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    codegenImplementation 'com.squareup:kotlinpoet:1.17.0'
+    codegenImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_kotlin_version"
+    codegenImplementation "com.google.guava:guava:$guava_version"
+
+    api project(':solana-aggregator:common')
+}
+
+tasks.register('solanaClean', Exec) {
+    commandLine('anchor', 'clean')
+}
+
+tasks.register('anchorKeysSync', Copy) {
+    // Anchor recreates the keypair file every time we call gradle clean, so we need to copy it from a known location.
+    // This way we ensure unchanged program ID
+    from "./dev-keys/DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL.json"
+    into "./target/deploy"
+    rename 'DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL.json', 'corda_notary-keypair.json'
+}
+
+tasks.register('solanaBuild', Exec) {
+    dependsOn('anchorKeysSync')
+    inputs.files('Cargo.toml', 'programs/corda-notary/Cargo.toml')
+    inputs.dir('programs/corda-notary/src')
+    outputs.file('target/deploy/corda_notary.so')
+    commandLine('anchor', 'build')
+}
+
+tasks.register('solanaUpgradeDevnet', Exec) {
+    dependsOn('solanaBuild')
+    commandLine('anchor', 'deploy', '--program-name', 'corda_notary', '--provider.cluster', 'devnet', '--provider.wallet', "${projectDir}/../../upgradeAuthority.json")
+}
+
+// This task is expected to be called with a custom parameters `walletAddress` and `amount` - E.g. ./gradlew -PwalletAddress=<address> -Pamount=<amount> :solana-aggregator:notary-program:solanaAirdropSolToDevnet
+tasks.register('solanaAirdropSolToDevnet', Exec) {
+    commandLine('solana', 'airdrop', '-v', '-u', 'devnet', '--commitment', 'confirmed', amount, walletAddress)
+}
+
+tasks.register('solanaTest', Exec) {
+    commandLine('anchor', 'test')
+}
+
+tasks.register('generateAnchorIdl', JavaExec) {
+    dependsOn('compileCodegenJava', 'solanaBuild')
+    inputs.dir('programs/corda-notary/src')
+    outputs.dir("$buildDir/generated/src/main/kotlin")
+    classpath("$buildDir/classes/kotlin/codegen")
+    classpath(configurations.codegenRuntimeClasspath)
+    mainClass = 'net.corda.solana.aggregator.notary.codegen.anchor.IdlCodeGeneratorKt'
+    args("$buildDir/generated/src/main/kotlin")
+}
+
+tasks.register('rustfmtCheck', Exec) {
+    commandLine('cargo', 'fmt', '--all', '--check')
+}
+
+clean {
+    dependsOn('solanaClean')
+}
+
+compileKotlin {
+    dependsOn('generateAnchorIdl')
+}
+
+test {
+    dependsOn('solanaTest')
+}
+
+jar {
+    baseName 'corda-solana-notary-program'
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            artifactId jar.baseName
+            from components.java
+        }
+    }
+}

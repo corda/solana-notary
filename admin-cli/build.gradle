@@ -1,0 +1,40 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+    id 'application'
+    id 'com.github.johnrengelman.shadow'
+}
+
+application {
+    mainClass = 'net.corda.solana.aggregator.admincli.SolanaAggregatorCliKt'
+}
+
+dependencies {
+    implementation project(':tools:cliutils')
+    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jackson_version"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_kotlin_version"
+    implementation "org.bouncycastle:bcprov-lts8on:$bouncycastle_version"
+    implementation project(":solana-aggregator:notary-program")
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar.enabled = false
+
+shadowJar {
+    archiveClassifier.set('')
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get(),
+                'Implementation-Title': 'Corda Solana Aggregator Admin CLI',
+                'Implementation-Version': project.version
+        )
+    }
+    // Handle duplicates if needed
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+assemble.dependsOn shadowJar
