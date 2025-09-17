@@ -3,21 +3,18 @@ package net.corda.solana.aggregator.admincli
 import net.corda.cliutils.CordaCliWrapper
 import net.corda.cliutils.ExitCodes
 import net.corda.cliutils.start
-import net.corda.solana.aggregator.admincli.cli.AdminCliVersionProvider
-import net.corda.solana.aggregator.admincli.cli.AuthorizeNotaryCommand
-import net.corda.solana.aggregator.admincli.cli.CreateNetworkCommand
-import net.corda.solana.aggregator.admincli.cli.InitializeCommand
-import net.corda.solana.aggregator.admincli.cli.ListNotariesCommand
-import net.corda.solana.aggregator.admincli.cli.RevokeNotaryCommand
-import net.corda.solana.aggregator.admincli.cli.ShowNextAvailableNetworkIdCommand
+import net.corda.solana.aggregator.admincli.cli.*
+import net.corda.solana.aggregator.notary.idl.CordaNotary
 import picocli.CommandLine.Command
 
 /**
  * Main CLI command class for Solana operations.
  */
-@Command(versionProvider = AdminCliVersionProvider::class)
-class SolanaAggregatorCli : CordaCliWrapper("solana-notary-admin", "CLI tool for admin operations on the Solana notary program") {
-
+@Command
+class SolanaAggregatorCli : CordaCliWrapper(
+    "solana-notary-admin",
+    "CLI tool for admin operations on the Solana notary program (${CordaNotary.PROGRAM_ID.base58()})"
+) {
     override fun additionalSubCommands() = setOf(
             InitializeCommand(),
             AuthorizeNotaryCommand(),

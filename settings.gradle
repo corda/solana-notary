@@ -1,0 +1,3 @@
+include('admin-cli')
+include('common')
+include('notary-program')

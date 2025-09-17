@@ -5,7 +5,7 @@ import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.aggregator.admincli.common.SharedCliOptions
 import net.corda.solana.aggregator.admincli.common.SolanaConfig
-import net.corda.solana.aggregator.common.RpcParams
+import net.corda.solana.aggregator.common.DefaultRpcParams
 import net.corda.solana.aggregator.common.getAnchorAccount
 import net.corda.solana.aggregator.notary.idl.CordaNotary
 import net.corda.solana.aggregator.notary.idl.CordaNotary.PROGRAM_ID
@@ -26,7 +26,7 @@ class ShowNextAvailableNetworkIdCommand : CliWrapperBase(
             val adminInfo = solanaConfig.rpcClient.getAnchorAccount(
                     administrationPda.base58(),
                     CordaNotary.Accounts.Administration.DISCRIMINATOR,
-                    RpcParams(),
+                    DefaultRpcParams(),
                     CordaNotary.Accounts.Administration::borshRead
             )
             return adminInfo.nextNetworkId

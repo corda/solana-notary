@@ -1,0 +1,24 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.9.20' apply false
+    id 'com.github.johnrengelman.shadow' version '7.1.2' apply false
+}
+
+ext {
+    kotlinVersion = '1.9.20'
+    cordaVersion = '4.12.6'
+    solana4jVersion = '1.2.2'
+    jacksonVersion = '2.17.2'
+    kotlinpoetVersion = '1.17.0'
+    guavaVersion = '33.1.0-jre'
+    bouncycastleVersion = '2.73.6'
+    junitJupiterVersion = '5.5.0-RC1'
+    assertjVersion = '3.12.2'
+    picocliVersion = '3.9.6'
+}
+
+subprojects {
+    repositories {
+        mavenCentral()
+        maven { url 'https://download.corda.net/maven/corda-dependencies' }
+    }
+}

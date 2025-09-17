@@ -1,6 +1,12 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm'
-    id 'corda.common-publishing'
+//    id 'corda.common-publishing'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 sourceSets {
@@ -9,13 +15,13 @@ sourceSets {
 }
 
 dependencies {
-    codegenImplementation project(':solana-aggregator:common')
-    codegenImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
-    codegenImplementation 'com.squareup:kotlinpoet:1.17.0'
-    codegenImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jackson_kotlin_version"
-    codegenImplementation "com.google.guava:guava:$guava_version"
+    codegenImplementation project(':common')
+    codegenImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    codegenImplementation "com.squareup:kotlinpoet:$kotlinpoetVersion"
+    codegenImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    codegenImplementation "com.google.guava:guava:$guavaVersion"
 
-    api project(':solana-aggregator:common')
+    api project(':common')
 }
 
 tasks.register('solanaClean', Exec) {
@@ -82,11 +88,11 @@ jar {
     baseName 'corda-solana-notary-program'
 }
 
-publishing {
-    publications {
-        maven(MavenPublication) {
-            artifactId jar.baseName
-            from components.java
-        }
-    }
-}
+//publishing {
+//    publications {
+//        maven(MavenPublication) {
+//            artifactId jar.baseName
+//            from components.java
+//        }
+//    }
+//}
