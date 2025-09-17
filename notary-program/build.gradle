@@ -1,27 +1,6 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    id 'java'
 //    id 'corda.common-publishing'
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
-sourceSets {
-    codegen.java.srcDir("src/codegen/kotlin")
-    main.java.srcDir("$buildDir/generated/src/main/kotlin")
-}
-
-dependencies {
-    codegenImplementation project(':common')
-    codegenImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    codegenImplementation "com.squareup:kotlinpoet:$kotlinpoetVersion"
-    codegenImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-    codegenImplementation "com.google.guava:guava:$guavaVersion"
-
-    api project(':common')
 }
 
 tasks.register('solanaClean', Exec) {
@@ -44,6 +23,30 @@ tasks.register('solanaBuild', Exec) {
     commandLine('anchor', 'build')
 }
 
+tasks.register('generateIdl', Exec) {
+    dependsOn('solanaBuild')
+    outputs.file("$buildDir/idl.json")
+    commandLine('anchor', 'idl', 'build', '-o', "$buildDir/idl.json")
+}
+
+clean {
+    dependsOn('solanaClean')
+}
+
+test {
+    dependsOn('solanaTest')
+}
+
+processResources {
+    from(tasks.named('solanaBuild')) {
+        into('net/corda/solana/notary/program')
+    }
+}
+
+jar {
+    archivesBaseName = 'corda-solana-notary-program'
+}
+
 tasks.register('solanaUpgradeDevnet', Exec) {
     dependsOn('solanaBuild')
     commandLine('anchor', 'deploy', '--program-name', 'corda_notary', '--provider.cluster', 'devnet', '--provider.wallet', "${projectDir}/../../upgradeAuthority.json")
@@ -58,34 +61,8 @@ tasks.register('solanaTest', Exec) {
     commandLine('anchor', 'test')
 }
 
-tasks.register('generateAnchorIdl', JavaExec) {
-    dependsOn('compileCodegenJava', 'solanaBuild')
-    inputs.dir('programs/corda-notary/src')
-    outputs.dir("$buildDir/generated/src/main/kotlin")
-    classpath("$buildDir/classes/kotlin/codegen")
-    classpath(configurations.codegenRuntimeClasspath)
-    mainClass = 'net.corda.solana.aggregator.notary.codegen.anchor.IdlCodeGeneratorKt'
-    args("$buildDir/generated/src/main/kotlin")
-}
-
 tasks.register('rustfmtCheck', Exec) {
     commandLine('cargo', 'fmt', '--all', '--check')
-}
-
-clean {
-    dependsOn('solanaClean')
-}
-
-compileKotlin {
-    dependsOn('generateAnchorIdl')
-}
-
-test {
-    dependsOn('solanaTest')
-}
-
-jar {
-    baseName 'corda-solana-notary-program'
 }
 
 //publishing {

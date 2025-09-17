@@ -1,6 +1,6 @@
 @file:Suppress("ComplexMethod", "TooManyFunctions", "MatchingDeclarationName")
 
-package net.corda.solana.aggregator.notary.codegen.anchor
+package net.corda.solana.notary.client.kotlincodegen
 
 import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
 import com.fasterxml.jackson.databind.JsonNode
@@ -12,58 +12,31 @@ import com.lmax.solana4j.api.InstructionBuilderBase
 import com.lmax.solana4j.api.PublicKey
 import com.lmax.solana4j.programs.SystemProgram
 import com.lmax.solana4j.programs.SystemProgram.SYSTEM_PROGRAM_ACCOUNT
-import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.KModifier.CONST
-import com.squareup.kotlinpoet.KModifier.DATA
-import com.squareup.kotlinpoet.KModifier.OVERRIDE
-import com.squareup.kotlinpoet.KModifier.PRIVATE
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.KModifier.*
 import com.squareup.kotlinpoet.MemberName.Companion.member
-import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.jvm.jvmStatic
-import net.corda.solana.aggregator.common.BorshSerialisable
-import net.corda.solana.aggregator.common.BorshUtils
-import net.corda.solana.aggregator.common.FixedBytesNewtypeStruct
-import net.corda.solana.aggregator.common.IdlCodeGenSupport
-import net.corda.solana.aggregator.common.AnchorInstruction
-import net.corda.solana.aggregator.common.Signer
-import net.corda.solana.aggregator.common.U128
-import net.corda.solana.aggregator.notary.codegen.anchor.AnchorIdl.Account
-import net.corda.solana.aggregator.notary.codegen.anchor.AnchorIdl.AnchorTypeDef.Struct
-import net.corda.solana.aggregator.notary.codegen.anchor.AnchorIdl.InstructionAccount
-import net.corda.solana.aggregator.notary.codegen.anchor.AnchorIdl.Seed
-import java.lang.ProcessBuilder.Redirect
+import net.corda.solana.aggregator.common.*
+import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.*
+import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
 import java.nio.ByteBuffer
 import javax.annotation.processing.Generated
 import kotlin.io.path.Path
 import kotlin.io.path.createDirectories
 
-const val OUTPUT_PACKAGE = "net.corda.solana.aggregator.notary.idl"
-
+lateinit var outputPackage: String
 lateinit var programName: String
 lateinit var programId: PropertySpec
 lateinit var accountTypes: Map<String, ByteArray>
 val fixedSizeStructs = HashMap<ClassName, Int>()
 
 fun main(args: Array<String>) {
-    val directory = Path(args[0]).createDirectories()
+    val idlFile = Path(args[0])
+    val outputDir = Path(args[1]).createDirectories()
+    outputPackage = args[2]
 
-    val anchorIdl = ProcessBuilder("anchor", "idl", "build")
-            .redirectError(Redirect.INHERIT)
-            .start()
-            .inputStream
-            .buffered()
-            .use { jacksonObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false).readValue<AnchorIdl>(it) }
+    val anchorIdl = jacksonObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false).readValue<AnchorIdl>(idlFile.toFile())
 
     programName = anchorIdl.metadata.name.toUpperCamel()
 
@@ -74,7 +47,7 @@ fun main(args: Array<String>) {
 
     accountTypes = anchorIdl.accounts.associateBy(Account::name, Account::discriminator)
 
-    val file = FileSpec.builder(OUTPUT_PACKAGE, programName)
+    val file = FileSpec.builder(outputPackage, programName)
             .indent("    ")
             .addFileComment("THIS IS GENERATED CODE, DO NOT MODIFY!")
             .addAnnotation(Generated::class)
@@ -86,7 +59,7 @@ fun main(args: Array<String>) {
             )
             .addType(parseProgram(anchorIdl))
             .build()
-    file.writeTo(directory)
+    file.writeTo(outputDir)
 }
 
 fun parseProgram(anchorIdl: AnchorIdl): TypeSpec {
@@ -144,12 +117,12 @@ fun parseAnchorStruct(
                             .build()
             )
             anchorTypeBuilder
-                    .implementBorshSerialisable(ClassName(OUTPUT_PACKAGE, programName, "Accounts", name), companionObjectBuilder)
+                    .implementBorshSerialisable(ClassName(outputPackage, programName, "Accounts", name), companionObjectBuilder)
                     .addType(companionObjectBuilder.build())
             accountsClassBuilder.addType(anchorTypeBuilder.build())
         } else {
             anchorTypeBuilder
-                    .implementBorshSerialisable(ClassName(OUTPUT_PACKAGE, programName, "Types", name), companionObjectBuilder)
+                    .implementBorshSerialisable(ClassName(outputPackage, programName, "Types", name), companionObjectBuilder)
                     .addType(companionObjectBuilder.build())
             typesClassBuilder.addType(anchorTypeBuilder.build())
         }
@@ -158,7 +131,7 @@ fun parseAnchorStruct(
         if (fixedArrayFields[0].type != "u8") {
             throw UnsupportedOperationException(fixedArrayFields[0].type)
         }
-        anchorTypeBuilder.extendFixedBytesNewtypeStruct(ClassName(OUTPUT_PACKAGE, programName, "Types", name), fixedArrayFields[0].size)
+        anchorTypeBuilder.extendFixedBytesNewtypeStruct(ClassName(outputPackage, programName, "Types", name), fixedArrayFields[0].size)
         typesClassBuilder.addType(anchorTypeBuilder.build())
     } else {
         throw UnsupportedOperationException("More than one fixed array field")
@@ -253,7 +226,7 @@ fun readFunctionCall(className: ClassName, bufferParam: ParameterSpec): CodeBloc
 }
 
 fun ClassName.isBorshSerialisable(): Boolean {
-    if (packageName == OUTPUT_PACKAGE && topLevelClassName().simpleName == programName) {
+    if (packageName == outputPackage && topLevelClassName().simpleName == programName) {
         val containingClass = enclosingClassName()?.simpleName
         return containingClass == "Types" || containingClass == "Accounts"
     }
@@ -294,7 +267,7 @@ fun TypeSpec.Builder.extendFixedBytesNewtypeStruct(name: ClassName, size: Int) {
     addSuperclassConstructorParameter("bytes")
 }
 
-fun parseInstruction(instruction: AnchorIdl.Instruction, programObjectBuilder: TypeSpec.Builder, types: List<AnchorIdl.AnchorType>) {
+fun parseInstruction(instruction: Instruction, programObjectBuilder: TypeSpec.Builder, types: List<AnchorType>) {
     val discriminator = PropertySpec.builder("DISCRIMINATOR", ByteArray::class, PRIVATE)
             .jvmStatic()
             .initializer(instruction.discriminator.toCodeBlock())
@@ -368,7 +341,7 @@ fun parseInstruction(instruction: AnchorIdl.Instruction, programObjectBuilder: T
                             .build()
             )
             .implementBorshSerialisable(
-                    ClassName(OUTPUT_PACKAGE, programName, instruction.name.toUpperCamel()),
+                    ClassName(outputPackage, programName, instruction.name.toUpperCamel()),
                     instructionClassCompanionBuilder,
                     isDeserialisable = false,
                     exclude = genericAccounts.map { it.name.toLowerCamel() }.toSet() +
@@ -382,14 +355,14 @@ fun parseInstruction(instruction: AnchorIdl.Instruction, programObjectBuilder: T
     programObjectBuilder.addType(instructionClass)
 }
 
-private fun List<AnchorIdl.AnchorType>.extractReferencedAccountFieldType(referencedAccountField: ReferencedAccountField): TypeName {
+private fun List<AnchorType>.extractReferencedAccountFieldType(referencedAccountField: ReferencedAccountField): TypeName {
     return (first { it.name == referencedAccountField.account }.type as Struct)
             .fields.filterIsInstance<Struct.Field.Named>()
             .first { it.name == referencedAccountField.accountFieldName }
             .type.toTypeName()
 }
 
-fun FunSpec.Builder.addPdaAccount(pda: AnchorIdl.PDA, signer: Boolean, writable: Boolean, ixBuilderParam: ParameterSpec): Set<ReferencedAccountField> {
+fun FunSpec.Builder.addPdaAccount(pda: PDA, signer: Boolean, writable: Boolean, ixBuilderParam: ParameterSpec): Set<ReferencedAccountField> {
     val seedMethod = IdlCodeGenSupport::class.member("seedBytes")
     val referencedAccountFields = mutableSetOf<ReferencedAccountField>()
     val seeds = pda.seeds.map { seed ->
@@ -494,7 +467,7 @@ fun ClassName.toClass(): Class<*> {
 fun JsonNode.toTypeName(): TypeName {
     return when {
         isTextual -> textValue().toBuiltinClassName()
-        has("defined") -> ClassName(OUTPUT_PACKAGE, programName, "Types", this["defined"]["name"].textValue())
+        has("defined") -> ClassName(outputPackage, programName, "Types", this["defined"]["name"].textValue())
         has("vec") -> className<List<*>>().parameterizedBy(this["vec"].toTypeName())
         else -> throw UnsupportedOperationException(toString())
     }

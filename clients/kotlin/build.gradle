@@ -1,0 +1,46 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+sourceSets {
+    codegen.java.srcDir("src/codegen/kotlin")
+    main.java.srcDir("$buildDir/generated/src/main/kotlin")
+}
+
+dependencies {
+    codegenImplementation project(':common')
+    codegenImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    codegenImplementation "com.squareup:kotlinpoet:$kotlinpoetVersion"
+    codegenImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    codegenImplementation "com.google.guava:guava:$guavaVersion"
+
+    api project(':common')
+}
+
+tasks.register('generateKotlinClient', JavaExec) {
+    dependsOn('compileCodegenJava', ':notary-program:generateIdl')
+    outputs.dir("$buildDir/generated/src/main/kotlin")
+    classpath("$buildDir/classes/kotlin/codegen", configurations.codegenRuntimeClasspath)
+    mainClass = 'net.corda.solana.notary.client.kotlincodegen.KotlinClientCodeGeneratorKt'
+    doFirst {
+        args(project(':notary-program').tasks.named('generateIdl').get().outputs.files.singleFile)
+        args("$buildDir/generated/src/main/kotlin")
+        args('net.corda.solana.notary.client.kotlin')
+    }
+}
+
+compileKotlin {
+    dependsOn('generateKotlinClient')
+}
+
+jar {
+    archivesBaseName = 'corda-solana-notary-kotlin-client'
+}

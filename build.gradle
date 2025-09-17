@@ -21,4 +21,7 @@ subprojects {
         mavenCentral()
         maven { url 'https://download.corda.net/maven/corda-dependencies' }
     }
+
+    group = 'net.corda'
+    version = '1.0.0-SNAPSHOT'
 }

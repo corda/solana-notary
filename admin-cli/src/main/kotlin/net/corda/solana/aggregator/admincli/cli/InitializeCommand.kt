@@ -6,7 +6,7 @@ import net.corda.solana.aggregator.admincli.common.SharedCliOptions
 import net.corda.solana.aggregator.admincli.common.SolanaConfig
 import net.corda.solana.aggregator.common.SolanaTransactionException
 import net.corda.solana.aggregator.common.sendAndConfirm
-import net.corda.solana.aggregator.notary.idl.CordaNotary
+import net.corda.solana.notary.client.kotlin.CordaNotary
 import picocli.CommandLine
 
 /**

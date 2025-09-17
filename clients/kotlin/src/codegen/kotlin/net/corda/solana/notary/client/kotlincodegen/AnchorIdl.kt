@@ -1,4 +1,4 @@
-package net.corda.solana.aggregator.notary.codegen.anchor
+package net.corda.solana.notary.client.kotlincodegen
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonTypeInfo

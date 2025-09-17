@@ -4,7 +4,7 @@ import net.corda.cliutils.CordaCliWrapper
 import net.corda.cliutils.ExitCodes
 import net.corda.cliutils.start
 import net.corda.solana.aggregator.admincli.cli.*
-import net.corda.solana.aggregator.notary.idl.CordaNotary
+import net.corda.solana.notary.client.kotlin.CordaNotary
 import picocli.CommandLine.Command
 
 /**

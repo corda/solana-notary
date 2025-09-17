@@ -15,7 +15,7 @@ application {
 }
 
 dependencies {
-    implementation project(':notary-program')
+    implementation project(':clients:kotlin')
     implementation "net.corda:corda-tools-cliutils:$cordaVersion"
     implementation "info.picocli:picocli:$picocliVersion"
     implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"

@@ -7,8 +7,8 @@ import net.corda.solana.aggregator.admincli.common.SharedCliOptions
 import net.corda.solana.aggregator.admincli.common.SolanaConfig
 import net.corda.solana.aggregator.common.DefaultRpcParams
 import net.corda.solana.aggregator.common.getAnchorAccount
-import net.corda.solana.aggregator.notary.idl.CordaNotary
-import net.corda.solana.aggregator.notary.idl.CordaNotary.PROGRAM_ID
+import net.corda.solana.notary.client.kotlin.CordaNotary
+import net.corda.solana.notary.client.kotlin.CordaNotary.PROGRAM_ID
 import picocli.CommandLine
 
 /**
