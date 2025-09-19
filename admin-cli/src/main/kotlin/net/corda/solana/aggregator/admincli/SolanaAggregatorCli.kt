@@ -4,13 +4,14 @@ import net.corda.cliutils.CordaCliWrapper
 import net.corda.cliutils.ExitCodes
 import net.corda.cliutils.start
 import net.corda.solana.aggregator.admincli.cli.*
+import net.corda.solana.notary.admincli.ManifestVersionProvider
 import net.corda.solana.notary.client.kotlin.CordaNotary
 import picocli.CommandLine.Command
 
 /**
  * Main CLI command class for Solana operations.
  */
-@Command
+@Command(versionProvider = ManifestVersionProvider::class)
 class SolanaAggregatorCli : CordaCliWrapper(
     "solana-notary-admin",
     "CLI tool for admin operations on the Solana notary program (${CordaNotary.PROGRAM_ID.base58()})"

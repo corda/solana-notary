@@ -1,16 +1,14 @@
-@file:Suppress("MagicNumber")
-
 package net.corda.solana.aggregator.common
 
 import com.lmax.solana4j.Solana
 import com.lmax.solana4j.api.ByteBufferSigner
 import com.lmax.solana4j.api.PublicKey
 import com.lmax.solana4j.api.SignedMessageBuilder
-import net.corda.core.crypto.secureRandomBytes
 import org.bouncycastle.crypto.params.Ed25519PrivateKeyParameters
 import org.bouncycastle.math.ec.rfc8032.Ed25519
 import java.nio.ByteBuffer
 import java.nio.file.Path
+import java.security.SecureRandom
 import kotlin.io.path.readText
 
 class Signer(val account: PublicKey, val byteBufferSigner: ByteBufferSigner) {
@@ -37,7 +35,10 @@ class Signer(val account: PublicKey, val byteBufferSigner: ByteBufferSigner) {
             return Signer(Solana.account(publicKey), PrivateKeyByteBufferSigner(privateKey))
         }
 
-        fun random(): Signer = fromPrivateKey(secureRandomBytes(Ed25519.SECRET_KEY_SIZE))
+        fun random(): Signer {
+            val random = SecureRandom()
+            return fromPrivateKey(ByteArray(Ed25519.SECRET_KEY_SIZE).apply(random::nextBytes))
+        }
     }
 
     override fun toString(): String = "Signer(${account.base58()})"

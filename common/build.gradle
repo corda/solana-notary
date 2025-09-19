@@ -12,12 +12,10 @@ java {
 }
 
 dependencies {
-    api "com.lmax:solana4j:${solana4jVersion}"
-    api "com.lmax:solana4j-json-rpc:${solana4jVersion}"
+    api "com.lmax:solana4j:$solana4jVersion"
+    api "com.lmax:solana4j-json-rpc:$solana4jVersion"
 
-    implementation "net.corda:corda-core:$cordaVersion"
-    implementation "org.bouncycastle:bcprov-lts8on:${bouncycastleVersion}"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
+    implementation "org.bouncycastle:bcprov-lts8on:$bouncycastleVersion"
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
 
     testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"

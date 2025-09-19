@@ -22,7 +22,15 @@ dependencies {
     implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
     implementation "org.bouncycastle:bcprov-lts8on:$bouncycastleVersion"
 
+    runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+
     testImplementation "org.jetbrains.kotlin:kotlin-test"
+}
+
+shadowJar {
+    manifest {
+        attributes 'Implementation-Version': archiveVersion
+    }
 }
 
 test {

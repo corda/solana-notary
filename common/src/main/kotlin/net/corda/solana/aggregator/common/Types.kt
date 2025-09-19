@@ -4,7 +4,6 @@ package net.corda.solana.aggregator.common
 
 import java.math.BigInteger
 import java.nio.ByteBuffer
-import net.corda.core.utilities.toHex
 
 class U128(val bigint: BigInteger) : BorshSerialisable {
     companion object {
@@ -63,5 +62,16 @@ abstract class FixedBytesNewtypeStruct(val bytes: ByteArray) : BorshSerialisable
         buffer.put(bytes)
     }
 
-    override fun toString(): String = "${javaClass.simpleName}(${bytes.toHex()})"
+    override fun toString(): String = "${javaClass.simpleName}(${encodeToHex(bytes)})"
+}
+
+private val hexCode = "0123456789ABCDEF".toCharArray()
+
+private fun encodeToHex(data: ByteArray): String {
+    val r = StringBuilder(data.size * 2)
+    for (b in data) {
+        r.append(hexCode[(b.toInt() shr 4) and 0xF])
+        r.append(hexCode[b.toInt() and 0xF])
+    }
+    return r.toString()
 }

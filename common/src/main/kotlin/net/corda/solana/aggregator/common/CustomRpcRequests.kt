@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.DeserializationFeature
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.lmax.solana4j.api.PublicKey
 import com.lmax.solana4j.client.api.Commitment
-import net.corda.core.utilities.toBase58
 import org.bouncycastle.util.encoders.Base64
 import java.io.IOException
 import java.net.URI
@@ -39,7 +38,7 @@ fun <T> getProgramAnchorAccounts(
                   "filters": [
                     {
                       "memcmp": {
-                        "bytes": "${discriminator.toBase58()}",
+                        "bytes": "${Base58.encode(discriminator)}",
                         "offset": 0
                       }
                     }
