@@ -11,7 +11,7 @@ java {
 }
 
 application {
-    mainClass = 'net.corda.solana.aggregator.admincli.SolanaAggregatorCliKt'
+    mainClass = 'net.corda.solana.notary.admincli.SolanaAggregatorCliKt'
 }
 
 dependencies {

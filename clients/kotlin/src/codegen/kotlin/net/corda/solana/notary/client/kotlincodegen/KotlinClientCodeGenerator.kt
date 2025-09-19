@@ -1,5 +1,3 @@
-@file:Suppress("ComplexMethod", "TooManyFunctions", "MatchingDeclarationName")
-
 package net.corda.solana.notary.client.kotlincodegen
 
 import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
@@ -17,9 +15,15 @@ import com.squareup.kotlinpoet.KModifier.*
 import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.jvm.jvmStatic
-import net.corda.solana.aggregator.common.*
+import net.corda.solana.notary.common.codegen.BorshSerialisable
+import net.corda.solana.notary.common.codegen.BorshUtils
+import net.corda.solana.notary.common.codegen.FixedBytesNewtypeStruct
+import net.corda.solana.notary.common.codegen.IdlCodeGenSupport
+import net.corda.solana.notary.common.codegen.U128
 import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.*
 import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
+import net.corda.solana.notary.common.AnchorInstruction
+import net.corda.solana.notary.common.Signer
 import java.nio.ByteBuffer
 import javax.annotation.processing.Generated
 import kotlin.io.path.Path
@@ -36,29 +40,31 @@ fun main(args: Array<String>) {
     val outputDir = Path(args[1]).createDirectories()
     outputPackage = args[2]
 
-    val anchorIdl = jacksonObjectMapper().configure(FAIL_ON_UNKNOWN_PROPERTIES, false).readValue<AnchorIdl>(idlFile.toFile())
+    val anchorIdl = jacksonObjectMapper()
+        .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
+        .readValue<AnchorIdl>(idlFile.toFile())
 
     programName = anchorIdl.metadata.name.toUpperCamel()
 
     programId = PropertySpec.builder("PROGRAM_ID", PublicKey::class)
-            .jvmStatic()
-            .initializer("%M(%S)", Solana::class.member("account"), anchorIdl.address)
-            .build()
+        .jvmStatic()
+        .initializer("%M(%S)", Solana::class.member("account"), anchorIdl.address)
+        .build()
 
     accountTypes = anchorIdl.accounts.associateBy(Account::name, Account::discriminator)
 
     val file = FileSpec.builder(outputPackage, programName)
-            .indent("    ")
-            .addFileComment("THIS IS GENERATED CODE, DO NOT MODIFY!")
-            .addAnnotation(Generated::class)
-            .addAnnotation(
-                    AnnotationSpec.builder(Suppress::class)
-                            .addMember("%S", "unused")
-                            .addMember("%S", "RedundantVisibilityModifier")
-                            .build()
-            )
-            .addType(parseProgram(anchorIdl))
-            .build()
+        .indent("    ")
+        .addFileComment("THIS IS GENERATED CODE, DO NOT MODIFY!")
+        .addAnnotation(Generated::class)
+        .addAnnotation(
+            AnnotationSpec.builder(Suppress::class)
+                .addMember("%S", "unused")
+                .addMember("%S", "RedundantVisibilityModifier")
+                .build()
+        )
+        .addType(parseProgram(anchorIdl))
+        .build()
     file.writeTo(outputDir)
 }
 
@@ -79,51 +85,51 @@ fun parseProgram(anchorIdl: AnchorIdl): TypeSpec {
     }
 
     return programObjectBuilder
-            .addProperty(programId)
-            .addType(typesClassBuilder.build())
-            .addType(accountsClassBuilder.build())
-            .addType(parseErrors(anchorIdl))
-            .build()
+        .addProperty(programId)
+        .addType(typesClassBuilder.build())
+        .addType(accountsClassBuilder.build())
+        .addType(parseErrors(anchorIdl))
+        .build()
 }
 
 fun parseAnchorStruct(
-        name: String,
-        docs: List<String>?,
-        type: Struct,
-        typesClassBuilder: TypeSpec.Builder,
-        accountsClassBuilder: TypeSpec.Builder,
+    name: String,
+    docs: List<String>?,
+    type: Struct,
+    typesClassBuilder: TypeSpec.Builder,
+    accountsClassBuilder: TypeSpec.Builder,
 ) {
     val anchorTypeBuilder = TypeSpec.classBuilder(name)
     docs?.forEach(anchorTypeBuilder::addKdoc)
     val fixedArrayFields = type.fields.filterIsInstance<Struct.Field.FixedArray>()
     if (fixedArrayFields.isEmpty()) {
         anchorTypeBuilder
-                .addModifiers(DATA)
-                .primaryProperties {
-                    for ((index, field) in type.fields.withIndex()) {
-                        if (field is Struct.Field.Named) {
-                            it.add(field.name.toLowerCamel(), field.type.toTypeName())
-                        } else if (field is Struct.Field.Unnamed) {
-                            it.add("field$index", field.type.toBuiltinClassName())
-                        }
+            .addModifiers(DATA)
+            .primaryProperties {
+                for ((index, field) in type.fields.withIndex()) {
+                    if (field is Struct.Field.Named) {
+                        it.add(field.name.toLowerCamel(), field.type.toTypeName())
+                    } else if (field is Struct.Field.Unnamed) {
+                        it.add("field$index", field.type.toBuiltinClassName())
                     }
                 }
+            }
         val companionObjectBuilder = TypeSpec.companionObjectBuilder()
         if (name in accountTypes) {
             companionObjectBuilder.addProperty(
-                    PropertySpec.builder("DISCRIMINATOR", ByteArray::class)
-                            .jvmStatic()
-                            .initializer(accountTypes.getValue(name).toCodeBlock())
-                            .build()
+                PropertySpec.builder("DISCRIMINATOR", ByteArray::class)
+                    .jvmStatic()
+                    .initializer(accountTypes.getValue(name).toCodeBlock())
+                    .build()
             )
             anchorTypeBuilder
-                    .implementBorshSerialisable(ClassName(outputPackage, programName, "Accounts", name), companionObjectBuilder)
-                    .addType(companionObjectBuilder.build())
+                .implementBorshSerialisable(ClassName(outputPackage, programName, "Accounts", name), companionObjectBuilder)
+                .addType(companionObjectBuilder.build())
             accountsClassBuilder.addType(anchorTypeBuilder.build())
         } else {
             anchorTypeBuilder
-                    .implementBorshSerialisable(ClassName(outputPackage, programName, "Types", name), companionObjectBuilder)
-                    .addType(companionObjectBuilder.build())
+                .implementBorshSerialisable(ClassName(outputPackage, programName, "Types", name), companionObjectBuilder)
+                .addType(companionObjectBuilder.build())
             typesClassBuilder.addType(anchorTypeBuilder.build())
         }
     } else if (fixedArrayFields.size == 1) {
@@ -139,23 +145,23 @@ fun parseAnchorStruct(
 }
 
 fun TypeSpec.Builder.implementBorshSerialisable(
-        name: ClassName,
-        companionObjectBuilder: TypeSpec.Builder,
-        isDeserialisable: Boolean = true,
-        exclude: Set<String> = emptySet(),
+    name: ClassName,
+    companionObjectBuilder: TypeSpec.Builder,
+    isDeserialisable: Boolean = true,
+    exclude: Set<String> = emptySet(),
 ): TypeSpec.Builder {
     addSuperinterface(BorshSerialisable::class)
 
     val bufferParam = ParameterSpec.builder("buffer", ByteBuffer::class).build()
 
     val borshWriteFunctionBuilder = FunSpec.builder("borshWrite")
-            .addModifiers(OVERRIDE)
-            .addParameter(bufferParam)
+        .addModifiers(OVERRIDE)
+        .addParameter(bufferParam)
 
     val borshReadFunctionBuilder = FunSpec.builder("borshRead")
-            .jvmStatic()
-            .addParameter(bufferParam)
-            .returns(name)
+        .jvmStatic()
+        .addParameter(bufferParam)
+        .returns(name)
 
     val serializableProperties = ArrayList<PropertySpec>(propertySpecs.filter { it.name !in exclude })
     serializableProperties.removeIf { it.name == "borshSize" }
@@ -172,11 +178,11 @@ fun TypeSpec.Builder.implementBorshSerialisable(
                 nonFixedSizeProperties += property
                 val elementType = propertyType.typeArguments[0] as ClassName
                 borshReadFunctionBuilder.addStatement(
-                        "val %N = %M(%N) { %L }",
-                        property,
-                        className<BorshUtils>().member("readList"),
-                        bufferParam,
-                        readFunctionCall(elementType, bufferParam)
+                    "val %N = %M(%N) { %L }",
+                    property,
+                    className<BorshUtils>().member("readList"),
+                    bufferParam,
+                    readFunctionCall(elementType, bufferParam)
                 )
             }
             is ClassName -> {
@@ -207,9 +213,9 @@ fun TypeSpec.Builder.implementBorshSerialisable(
 
     if (isDeserialisable) {
         borshReadFunctionBuilder.addStatement(
-                "return %T(%L)",
-                name,
-                serializableProperties.joinToString(", ") { CodeBlock.of("%N", it).toString() }
+            "return %T(%L)",
+            name,
+            serializableProperties.joinToString(", ") { CodeBlock.of("%N", it).toString() }
         )
         companionObjectBuilder.addFunction(borshReadFunctionBuilder.build())
     }
@@ -237,9 +243,9 @@ fun TypeSpec.Builder.fixedBorshSize(name: ClassName, size: Int, companionBuilder
     val borshSizeProperty = PropertySpec.builder("BORSH_SIZE", Int::class, CONST).initializer("%L", size).build()
     companionBuilder.addProperty(borshSizeProperty)
     addProperty(
-            PropertySpec.builder("borshSize", Int::class, OVERRIDE)
-                    .getter(FunSpec.getterBuilder().addStatement("return %N", borshSizeProperty).build())
-                    .build()
+        PropertySpec.builder("borshSize", Int::class, OVERRIDE)
+            .getter(FunSpec.getterBuilder().addStatement("return %N", borshSizeProperty).build())
+            .build()
     )
     fixedSizeStructs[name] = size
     return borshSizeProperty
@@ -250,15 +256,15 @@ fun TypeSpec.Builder.extendFixedBytesNewtypeStruct(name: ClassName, size: Int) {
     val borshSizeProperty = fixedBorshSize(name, size, companionObjectBuilder)
     val bufferParam = ParameterSpec.builder("buffer", ByteBuffer::class).build()
     companionObjectBuilder.addFunction(
-            FunSpec.builder("borshRead")
-                    .jvmStatic()
-                    .addParameter(bufferParam)
-                    .addKdoc("The ByteBuffer needs to be in LITTLE_ENDIAN byte order.")
-                    .returns(name)
-                    .addStatement("val bytes = ByteArray(%N)", borshSizeProperty)
-                    .addStatement("%N.get(bytes)", bufferParam)
-                    .addStatement("return %T(bytes)", name)
-                    .build()
+        FunSpec.builder("borshRead")
+            .jvmStatic()
+            .addParameter(bufferParam)
+            .addKdoc("The ByteBuffer needs to be in LITTLE_ENDIAN byte order.")
+            .returns(name)
+            .addStatement("val bytes = ByteArray(%N)", borshSizeProperty)
+            .addStatement("%N.get(bytes)", bufferParam)
+            .addStatement("return %T(bytes)", name)
+            .build()
     )
 
     addType(companionObjectBuilder.build())
@@ -269,15 +275,15 @@ fun TypeSpec.Builder.extendFixedBytesNewtypeStruct(name: ClassName, size: Int) {
 
 fun parseInstruction(instruction: Instruction, programObjectBuilder: TypeSpec.Builder, types: List<AnchorType>) {
     val discriminator = PropertySpec.builder("DISCRIMINATOR", ByteArray::class, PRIVATE)
-            .jvmStatic()
-            .initializer(instruction.discriminator.toCodeBlock())
-            .build()
+        .jvmStatic()
+        .initializer(instruction.discriminator.toCodeBlock())
+        .build()
 
     val ixBuilderParam = ParameterSpec.builder("builder", InstructionBuilderBase::class).build()
     val addToTxFunctionBuilder = FunSpec.builder("addToTx")
-            .addModifiers(OVERRIDE)
-            .addParameter(ixBuilderParam)
-            .addStatement("addToTx(%N, %N, %N)", programId, discriminator, ixBuilderParam)
+        .addModifiers(OVERRIDE)
+        .addParameter(ixBuilderParam)
+        .addStatement("addToTx(%N, %N, %N)", programId, discriminator, ixBuilderParam)
 
     val signers = ArrayList<String>()
     var defaultTxFeePayer: String? = null
@@ -308,58 +314,58 @@ fun parseInstruction(instruction: Instruction, programObjectBuilder: TypeSpec.Bu
 
     val instructionClassCompanionBuilder = TypeSpec.companionObjectBuilder().addProperty(discriminator)
     val instructionClass = TypeSpec.classBuilder(instruction.name.toUpperCamel())
-            .addModifiers(DATA)
-            .superclass(AnchorInstruction::class)
-            .primaryProperties { primaryPropertyBuilder ->
-                for (arg in instruction.args) {
-                    primaryPropertyBuilder.add(arg.name.toLowerCamel(), arg.type.toTypeName())
+        .addModifiers(DATA)
+        .superclass(AnchorInstruction::class)
+        .primaryProperties { primaryPropertyBuilder ->
+            for (arg in instruction.args) {
+                primaryPropertyBuilder.add(arg.name.toLowerCamel(), arg.type.toTypeName())
+            }
+            for (account in genericAccounts) {
+                val name = account.name.toLowerCamel()
+                if (account.signer) {
+                    primaryPropertyBuilder.add(name, className<Signer>())
+                } else {
+                    primaryPropertyBuilder.add(name, className<PublicKey>())
                 }
-                for (account in genericAccounts) {
-                    val name = account.name.toLowerCamel()
-                    if (account.signer) {
-                        primaryPropertyBuilder.add(name, className<Signer>())
-                    } else {
-                        primaryPropertyBuilder.add(name, className<PublicKey>())
-                    }
-                }
-                additionalProperties.forEach { referencedAccountField ->
-                    primaryPropertyBuilder.add(
-                            referencedAccountField.classPropertyName,
-                            types.extractReferencedAccountFieldType(referencedAccountField)
-                    )
-                }
+            }
+            additionalProperties.forEach { referencedAccountField ->
                 primaryPropertyBuilder.add(
-                        "txFeePayer",
-                        className<Signer>().copy(nullable = true),
-                        CodeBlock.of("%L", defaultTxFeePayer),
-                        OVERRIDE
+                    referencedAccountField.classPropertyName,
+                    types.extractReferencedAccountFieldType(referencedAccountField)
                 )
             }
-            .addProperty(
-                    PropertySpec.builder("signers", className<List<*>>().parameterizedBy(className<Signer>()), OVERRIDE)
-                            .getter(FunSpec.getterBuilder().addStatement("return listOf(%L)", signers.joinToString(", ")).build())
-                            .build()
+            primaryPropertyBuilder.add(
+                "txFeePayer",
+                className<Signer>().copy(nullable = true),
+                CodeBlock.of("%L", defaultTxFeePayer),
+                OVERRIDE
             )
-            .implementBorshSerialisable(
-                    ClassName(outputPackage, programName, instruction.name.toUpperCamel()),
-                    instructionClassCompanionBuilder,
-                    isDeserialisable = false,
-                    exclude = genericAccounts.map { it.name.toLowerCamel() }.toSet() +
-                            "txFeePayer" +
-                            "signers" +
-                            additionalProperties.map { it.classPropertyName }.toSet()
-            )
-            .addType(instructionClassCompanionBuilder.build())
-            .addFunction(addToTxFunctionBuilder.build())
-            .build()
+        }
+        .addProperty(
+            PropertySpec.builder("signers", className<List<*>>().parameterizedBy(className<Signer>()), OVERRIDE)
+                .getter(FunSpec.getterBuilder().addStatement("return listOf(%L)", signers.joinToString(", ")).build())
+                .build()
+        )
+        .implementBorshSerialisable(
+            ClassName(outputPackage, programName, instruction.name.toUpperCamel()),
+            instructionClassCompanionBuilder,
+            isDeserialisable = false,
+            exclude = genericAccounts.map { it.name.toLowerCamel() }.toSet() +
+                "txFeePayer" +
+                "signers" +
+                additionalProperties.map { it.classPropertyName }.toSet()
+        )
+        .addType(instructionClassCompanionBuilder.build())
+        .addFunction(addToTxFunctionBuilder.build())
+        .build()
     programObjectBuilder.addType(instructionClass)
 }
 
 private fun List<AnchorType>.extractReferencedAccountFieldType(referencedAccountField: ReferencedAccountField): TypeName {
     return (first { it.name == referencedAccountField.account }.type as Struct)
-            .fields.filterIsInstance<Struct.Field.Named>()
-            .first { it.name == referencedAccountField.accountFieldName }
-            .type.toTypeName()
+        .fields.filterIsInstance<Struct.Field.Named>()
+        .first { it.name == referencedAccountField.accountFieldName }
+        .type.toTypeName()
 }
 
 fun FunSpec.Builder.addPdaAccount(pda: PDA, signer: Boolean, writable: Boolean, ixBuilderParam: ParameterSpec): Set<ReferencedAccountField> {
@@ -384,13 +390,13 @@ fun FunSpec.Builder.addPdaAccount(pda: PDA, signer: Boolean, writable: Boolean, 
     }
 
     addStatement(
-            "%N.account(%M(listOf(%L), %N).address(), %L, %L)",
-            ixBuilderParam,
-            Solana::class.member("programDerivedAddress"),
-            seeds.joinToString(", "),
-            programId,
-            signer,
-            writable
+        "%N.account(%M(listOf(%L), %N).address(), %L, %L)",
+        ixBuilderParam,
+        Solana::class.member("programDerivedAddress"),
+        seeds.joinToString(", "),
+        programId,
+        signer,
+        writable
     )
     return referencedAccountFields
 }
@@ -399,9 +405,9 @@ fun FunSpec.Builder.addAddressAccount(address: String, ixBuilderParam: Parameter
     when (address) {
         SYSTEM_PROGRAM_ACCOUNT.base58() -> {
             addStatement(
-                    "%N.account(%M, false, false)",
-                    ixBuilderParam,
-                    SystemProgram::class.member("SYSTEM_PROGRAM_ACCOUNT")
+                "%N.account(%M, false, false)",
+                ixBuilderParam,
+                SystemProgram::class.member("SYSTEM_PROGRAM_ACCOUNT")
             )
         }
         else -> throw UnsupportedOperationException(address)
@@ -411,24 +417,24 @@ fun FunSpec.Builder.addAddressAccount(address: String, ixBuilderParam: Parameter
 fun parseErrors(anchorIdl: AnchorIdl): TypeSpec {
     val errorEnumBuilder = TypeSpec.enumBuilder("Error").primaryProperties { it.add("code", className<Int>()) }
     val valueOfMethodBuilder = FunSpec.builder("valueOf")
-            .jvmStatic()
-            .addParameter("code", Int::class)
-            .returns(ClassName("", "Error").copy(nullable = true))
-            .beginControlFlow("return when (code)")
+        .jvmStatic()
+        .addParameter("code", Int::class)
+        .returns(ClassName("", "Error").copy(nullable = true))
+        .beginControlFlow("return when (code)")
     for (error in anchorIdl.errors) {
         errorEnumBuilder.addEnumConstant(
-                error.name,
-                TypeSpec.anonymousClassBuilder().addSuperclassConstructorParameter("%L", error.code).build()
+            error.name,
+            TypeSpec.anonymousClassBuilder().addSuperclassConstructorParameter("%L", error.code).build()
         )
         valueOfMethodBuilder.addStatement("%L -> %L", error.code, error.name)
     }
     val valueOfMethod = valueOfMethodBuilder
-            .addStatement("else -> null")
-            .endControlFlow()
-            .build()
+        .addStatement("else -> null")
+        .endControlFlow()
+        .build()
     return errorEnumBuilder
-            .addType(TypeSpec.companionObjectBuilder().addFunction(valueOfMethod).build())
-            .build()
+        .addType(TypeSpec.companionObjectBuilder().addFunction(valueOfMethod).build())
+        .build()
 }
 
 inline fun <reified T> className(): ClassName = T::class.asClassName()
@@ -494,8 +500,8 @@ fun String.toLowerCamel(): String = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LO
 fun ByteArray.toCodeBlock() = CodeBlock.of("byteArrayOf(%L)", joinToString(", "))
 
 data class ReferencedAccountField(
-        val accountFieldName: String,
-        val account: String,
+    val accountFieldName: String,
+    val account: String,
 ) {
     val classPropertyName = accountFieldName.toLowerCamel()
 }
