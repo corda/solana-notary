@@ -5,7 +5,7 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-corda_notary = "E5Znp7prsJFLy9k4BgfUCe61wDqeDjTvVeW7EA5fGNVr"
+corda_notary = "DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL"
 
 [registry]
 url = "https://api.apr.dev"

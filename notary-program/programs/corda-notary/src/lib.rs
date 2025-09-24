@@ -14,7 +14,8 @@ pub use types::TxId;
 mod commit;
 use commit::do_commit;
 
-declare_id!("E5Znp7prsJFLy9k4BgfUCe61wDqeDjTvVeW7EA5fGNVr");
+declare_id!("DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL");
+
 pub const CURRENT_ACCOUNT_SCHEMA_VERSION: u8 = 1;
 
 #[program]

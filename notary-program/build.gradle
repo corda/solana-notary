@@ -7,16 +7,7 @@ tasks.register('solanaClean', Exec) {
     commandLine('anchor', 'clean')
 }
 
-tasks.register('anchorKeysSync', Copy) {
-    // Anchor recreates the keypair file every time we call gradle clean, so we need to copy it from a known location.
-    // This way we ensure unchanged program ID
-    from "./dev-keys/DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL.json"
-    into "./target/deploy"
-    rename 'DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL.json', 'corda_notary-keypair.json'
-}
-
 tasks.register('solanaBuild', Exec) {
-    dependsOn('anchorKeysSync')
     inputs.files('Cargo.toml', 'programs/corda-notary/Cargo.toml')
     inputs.dir('programs/corda-notary/src')
     outputs.file('target/deploy/corda_notary.so')
