@@ -1,4 +1,0 @@
-include('admin-cli')
-include('common')
-include('clients:kotlin')
-include('notary-program')

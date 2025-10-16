@@ -16,13 +16,3 @@ ext {
     picocliVersion = '3.9.6'
     logbackVersion = '1.5.18'
 }
-
-subprojects {
-    repositories {
-        mavenCentral()
-        maven { url 'https://download.corda.net/maven/corda-dependencies' }
-    }
-
-    group = 'net.corda'
-    version = '1.0.0-SNAPSHOT'
-}
