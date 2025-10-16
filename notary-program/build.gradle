@@ -32,6 +32,9 @@ processResources {
     from(tasks.named('solanaBuild')) {
         into('net/corda/solana/notary/program')
     }
+    from(tasks.named('generateIdl')) {
+        into('net/corda/solana/notary/program')
+    }
 }
 
 jar {
