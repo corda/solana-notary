@@ -38,7 +38,7 @@ processResources {
 }
 
 jar {
-    archivesBaseName = 'corda-solana-notary-program'
+    archiveBaseName = 'corda-solana-notary-program'
 }
 
 tasks.register('solanaUpgradeDevnet', Exec) {

@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 java {
@@ -17,10 +17,10 @@ sourceSets {
 
 dependencies {
     codegenImplementation project(':common')
-    codegenImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
-    codegenImplementation "com.squareup:kotlinpoet:$kotlinpoetVersion"
-    codegenImplementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-    codegenImplementation "com.google.guava:guava:$guavaVersion"
+    codegenImplementation("org.jetbrains.kotlin:kotlin-stdlib")
+    codegenImplementation(libs.kotlinpoet)
+    codegenImplementation(libs.jackson.kotlin)
+    codegenImplementation(libs.guava)
 
     api project(':common')
 }
@@ -42,5 +42,5 @@ compileKotlin {
 }
 
 jar {
-    archivesBaseName = 'corda-solana-notary-kotlin-client'
+    archiveBaseName = 'corda-solana-notary-kotlin-client'
 }

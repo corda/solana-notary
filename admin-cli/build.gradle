@@ -1,7 +1,7 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
     id 'application'
-    id 'com.github.johnrengelman.shadow'
+    alias(libs.plugins.shadow)
 }
 
 java {
@@ -16,15 +16,15 @@ application {
 
 dependencies {
     implementation project(':clients:kotlin')
-    implementation "net.corda:corda-tools-cliutils:$cordaVersion"
-    implementation "info.picocli:picocli:$picocliVersion"
-    implementation "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
-    implementation "org.bouncycastle:bcprov-lts8on:$bouncycastleVersion"
+    implementation(libs.corda.tools.cliutils)
+    implementation(libs.picocli)
+    implementation(libs.jackson.dataformat.yaml)
+    implementation(libs.jackson.kotlin)
+    implementation(libs.bouncycastle)
 
-    runtimeOnly "ch.qos.logback:logback-classic:$logbackVersion"
+    runtimeOnly(libs.logback)
 
-    testImplementation "org.jetbrains.kotlin:kotlin-test"
+    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
 shadowJar {

@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.jvm'
+    alias(libs.plugins.kotlin.jvm)
 //    id 'corda.common-publishing'
 }
 
@@ -12,16 +12,16 @@ java {
 }
 
 dependencies {
-    api "com.lmax:solana4j:$solana4jVersion"
-    api "com.lmax:solana4j-json-rpc:$solana4jVersion"
+    api(libs.solana4j.core)
+    api(libs.solana4j.rpc)
 
-    implementation "org.bouncycastle:bcprov-lts8on:$bouncycastleVersion"
-    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion"
+    implementation(libs.bouncycastle)
+    implementation(libs.jackson.kotlin)
 
-    testImplementation "org.junit.jupiter:junit-jupiter-api:$junitJupiterVersion"
-    testImplementation "org.assertj:assertj-core:$assertjVersion"
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.assertj.core)
 
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:$junitJupiterVersion"
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 test {

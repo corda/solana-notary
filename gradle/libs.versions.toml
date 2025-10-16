@@ -1,0 +1,35 @@
+[versions]
+kotlin = "1.9.25"  # Use the same minor version of Kotlin as Corda
+corda = "4.12.6"
+solana4j = "1.2.2"
+jackson = "2.17.2"
+kotlinpoet = "1.17.0"
+guava = "33.1.0-jre"
+bouncycastle = "2.73.6"
+picocli = "3.9.6"
+logback = "1.5.18"
+junit-jupiter = "5.14.0"
+assertj = "3.27.6"
+artifactory = "6.0.2"
+detekt = "2.0.0-alpha.0"
+
+[libraries]
+corda-tools-cliutils = { module = "net.corda:corda-tools-cliutils", version.ref = "corda" }
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
+jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+bouncycastle = { module = "org.bouncycastle:bcprov-lts8on", version.ref = "bouncycastle" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+solana4j-core = { module = "com.lmax:solana4j", version.ref = "solana4j" }
+solana4j-rpc = { module = "com.lmax:solana4j-json-rpc", version.ref = "solana4j" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+artifactory = { module = "com.jfrog.artifactory:com.jfrog.artifactory.gradle.plugin", version.ref = "artifactory" }
+detekt-ktlint-wrapper = { module = "dev.detekt:detekt-rules-ktlint-wrapper", version.ref = "detekt" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+shadow = { id = "com.github.johnrengelman.shadow", version = "7.1.2" }
+detekt = { id = "dev.detekt", version.ref = "detekt" }
