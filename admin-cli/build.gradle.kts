@@ -1,6 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
-    id 'application'
+    application
     alias(libs.plugins.shadow)
 }
 
@@ -11,11 +11,11 @@ java {
 }
 
 application {
-    mainClass = 'net.corda.solana.notary.admincli.SolanaAggregatorCliKt'
+    mainClass = "net.corda.solana.notary.admincli.SolanaAggregatorCliKt"
 }
 
 dependencies {
-    implementation project(':clients:kotlin')
+    implementation(project(":clients:kotlin"))
     implementation(libs.corda.tools.cliutils)
     implementation(libs.picocli)
     implementation(libs.jackson.dataformat.yaml)
@@ -23,16 +23,14 @@ dependencies {
     implementation(libs.bouncycastle)
 
     runtimeOnly(libs.logback)
-
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
 }
 
-shadowJar {
+tasks.jar {
     manifest {
-        attributes 'Implementation-Version': archiveVersion
+        attributes["Implementation-Version"] = archiveVersion
     }
 }
 
-test {
+tasks.test {
     useJUnitPlatform()
 }

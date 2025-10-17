@@ -24,12 +24,12 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-test {
+tasks.test {
     useJUnitPlatform()
 }
 
-jar {
-    archiveBaseName = 'corda-solana-notary-common'
+tasks.jar {
+    archiveBaseName = "corda-solana-notary-common"
 }
 
 //publishing {
