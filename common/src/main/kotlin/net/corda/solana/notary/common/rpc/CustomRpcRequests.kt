@@ -20,40 +20,43 @@ private val mapper = jacksonObjectMapper().configure(DeserializationFeature.FAIL
 const val HTTP_OK = 200
 
 fun <T> getProgramAnchorAccounts(
-        programId: PublicKey,
-        baseUrl: String, client: HttpClient,
-        discriminator: ByteArray,
-        deserializer: (ByteBuffer) -> T,
-        commitment: Commitment = Commitment.CONFIRMED,
+    programId: PublicKey,
+    baseUrl: String,
+    client: HttpClient,
+    discriminator: ByteArray,
+    deserializer: (ByteBuffer) -> T,
+    commitment: Commitment = Commitment.CONFIRMED,
 ): List<T> {
-    val requestBody = """
+    val requestBody =
+        """
+        {
+          "jsonrpc": "2.0",
+          "id": 1,
+          "method": "getProgramAccounts",
+          "params": [
+            "${programId.base58()}",
             {
-              "jsonrpc": "2.0",
-              "id": 1,
-              "method": "getProgramAccounts",
-              "params": [
-                "${programId.base58()}",
+              "commitment": "${commitment.name.lowercase()}",
+              "filters": [
                 {
-                  "commitment": "${commitment.name.lowercase()}",
-                  "filters": [
-                    {
-                      "memcmp": {
-                        "bytes": "${Base58.encode(discriminator)}",
-                        "offset": 0
-                      }
-                    }
-                  ],
-                  "encoding": "base64"
+                  "memcmp": {
+                    "bytes": "${Base58.encode(discriminator)}",
+                    "offset": 0
+                  }
                 }
-              ]
+              ],
+              "encoding": "base64"
             }
+          ]
+        }
         """.trimIndent()
 
-    val request = HttpRequest.newBuilder()
-            .uri(URI.create(baseUrl))
-            .header("Content-Type", "application/json")
-            .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-            .build()
+    val request = HttpRequest
+        .newBuilder()
+        .uri(URI.create(baseUrl))
+        .header("Content-Type", "application/json")
+        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+        .build()
 
     val response = client.send(request, HttpResponse.BodyHandlers.ofString())
 
@@ -72,19 +75,18 @@ fun <T> getProgramAnchorAccounts(
 
 @JsonIgnoreProperties
 data class ProgramAccountsResponse(
-        val jsonrpc: String,
-        val result: List<AccountInfo>,
-        val id: Int,
+    val jsonrpc: String,
+    val result: List<AccountInfo>,
+    val id: Int,
 )
 
 @JsonIgnoreProperties
 data class AccountInfo(
-        val account: AccountData,
-        val pubkey: String,
+    val account: AccountData,
+    val pubkey: String,
 )
 
 @JsonIgnoreProperties
 class AccountData(
-        val data: Array<String>,
+    val data: Array<String>,
 )
-

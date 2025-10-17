@@ -2,18 +2,17 @@ package net.corda.solana.notary.admincli.cmds
 
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.common.rpc.SolanaTransactionException
-import net.corda.solana.notary.common.rpc.sendAndConfirm
 import net.corda.solana.notary.admincli.SharedCliOptions
 import net.corda.solana.notary.admincli.SolanaConfig
 import net.corda.solana.notary.client.kotlin.CordaNotary
+import net.corda.solana.notary.common.rpc.SolanaTransactionException
+import net.corda.solana.notary.common.rpc.sendAndConfirm
 import picocli.CommandLine
 
 /**
  * Command to initialize the Solana notary configuration.
  */
 class InitializeCommand : CliWrapperBase("initialize", "Initializes the Corda Notary on Solana blockchain") {
-
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 

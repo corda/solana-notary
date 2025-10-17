@@ -9,16 +9,16 @@ import net.corda.solana.notary.common.by
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets.US_ASCII
 import java.util.Base64
-import kotlin.collections.forEach
 
 fun serialiseToTransaction(
     instructions: (TransactionBuilder) -> Unit,
     txFeePayer: Signer,
     otherSigners: Collection<Signer>,
     latestBlockhash: Blockhash,
-    buffer: ByteBuffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE)
+    buffer: ByteBuffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE),
 ): String {
-    Solana.builder(buffer)
+    Solana
+        .builder(buffer)
         .v0()
         .recent(Solana.blockhash(latestBlockhash.blockhashBase58))
         .setInstructionsAndSign(instructions, txFeePayer, otherSigners)
@@ -39,4 +39,3 @@ fun MessageBuilderV0.setInstructionsAndSign(
         .also { builder -> otherSigners.forEach(builder::by) }
         .build()
 }
-

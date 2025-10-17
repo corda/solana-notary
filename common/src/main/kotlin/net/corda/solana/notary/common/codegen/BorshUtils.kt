@@ -9,24 +9,30 @@ import java.nio.ByteOrder
 // https://github.com/near/borshj/blob/master/src/main/java/org/near/borshj
 object BorshUtils {
     fun fixedSize(clazz: Class<*>): Int? {
-        when (clazz) {
-            Byte::class.java, java.lang.Byte::class.java -> return 1
-            Short::class.java, java.lang.Short::class.java -> return 2
-            Int::class.java, Integer::class.java -> return 4
-            Long::class.java, java.lang.Long::class.java -> return 8
-            Float::class.java, java.lang.Float::class.java -> return 4
-            Double::class.java, java.lang.Double::class.java -> return 8
-            Boolean::class.java, java.lang.Boolean::class.java -> return 1
-        }
+        primitiveSize(clazz)?.let { return it }
         if (PublicKey::class.java.isAssignableFrom(clazz)) {
             return PublicKey.PUBLIC_KEY_LENGTH
         }
         if (BorshSerialisable::class.java.isAssignableFrom(clazz)) {
             try {
                 return clazz.getDeclaredField("BORSH_SIZE").get(null) as Int
-            } catch (_: Exception) { }
+            } catch (_: Exception) {
+            }
         }
         return null
+    }
+
+    private fun primitiveSize(clazz: Class<*>): Int? {
+        return when (clazz) {
+            Byte::class.java, java.lang.Byte::class.java -> 1
+            Short::class.java, java.lang.Short::class.java -> 2
+            Int::class.java, Integer::class.java -> 4
+            Long::class.java, java.lang.Long::class.java -> 8
+            Float::class.java, java.lang.Float::class.java -> 4
+            Double::class.java, java.lang.Double::class.java -> 8
+            Boolean::class.java, java.lang.Boolean::class.java -> 1
+            else -> null
+        }
     }
 
     fun readByte(buffer: ByteBuffer): Byte {
@@ -154,8 +160,8 @@ object BorshUtils {
 }
 
 /**
- * Concrete types should also have a static `borshRead` method which takes in a single [ByteBuffer] parameter and returns the deserialised
- * instance of the same type.
+ * Concrete types should also have a static `borshRead` method which takes in a single [ByteBuffer] parameter and
+ * returns the deserialised instance of the same type.
  *
  * If a concrete type has a fixed size then also add a `BORSH_SIZE` static constant (see [U128] as example).
  */

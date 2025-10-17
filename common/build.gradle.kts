@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.detekt)
 //    id 'corda.common-publishing'
 }
 
@@ -22,6 +23,8 @@ dependencies {
     testImplementation(libs.assertj.core)
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
+    detektPlugins(libs.detekt.ktlint.wrapper)
 }
 
 tasks.test {
@@ -30,6 +33,11 @@ tasks.test {
 
 tasks.jar {
     archiveBaseName = "corda-solana-notary-common"
+}
+
+detekt {
+    config.setFrom(rootProject.file("detekt.yml"))
+    buildUponDefaultConfig = true
 }
 
 //publishing {

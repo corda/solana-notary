@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     application
     alias(libs.plugins.shadow)
+    alias(libs.plugins.detekt)
 }
 
 java {
@@ -23,6 +24,8 @@ dependencies {
     implementation(libs.bouncycastle)
 
     runtimeOnly(libs.logback)
+
+    detektPlugins(libs.detekt.ktlint.wrapper)
 }
 
 tasks.jar {
@@ -33,4 +36,9 @@ tasks.jar {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+detekt {
+    config.setFrom(rootProject.file("detekt.yml"))
+    buildUponDefaultConfig = true
 }

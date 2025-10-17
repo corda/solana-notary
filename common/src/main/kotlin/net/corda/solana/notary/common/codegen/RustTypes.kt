@@ -48,8 +48,9 @@ class U128(val bigint: BigInteger) : BorshSerialisable {
 }
 
 /**
- * Extended by classes which represent Rust ["newtype" structs](https://rust-unofficial.github.io/patterns/patterns/behavioural/newtype.html).
- * over a fixed size byte array.
+ * Extended by classes which represent Rust
+ * ["newtype" structs](https://rust-unofficial.github.io/patterns/patterns/behavioural/newtype.html) over a fixed size
+ * byte array.
  */
 abstract class FixedBytesNewtypeStruct(val bytes: ByteArray) : BorshSerialisable {
     init {

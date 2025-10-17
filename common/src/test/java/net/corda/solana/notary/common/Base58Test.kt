@@ -10,7 +10,7 @@ import java.math.BigInteger
  */
 class Base58Test {
     @Test
-	fun testEncode() {
+    fun testEncode() {
         val testbytes = "Hello World".toByteArray()
         assertThat(Base58.encode(testbytes)).isEqualTo("JxF12TrwUP45BMd")
 
@@ -28,11 +28,10 @@ class Base58Test {
     }
 
     @Test
-	fun testDecode() {
+    fun testDecode() {
         val testbytes = "Hello World".toByteArray()
         val actualbytes = Base58.decode("JxF12TrwUP45BMd")
         assertThat(actualbytes).isEqualTo(testbytes)
-
 
         assertThat(Base58.decode("1")).isEqualTo(ByteArray(1))
         assertThat(Base58.decode("1111")).isEqualTo(ByteArray(4))

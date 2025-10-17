@@ -8,11 +8,11 @@ data class DefaultRpcParams(
     val skipPreflight: Boolean = false,
 ) : SolanaClientOptionalParams {
     private val params = mapOf(
-            "encoding" to "base64",
-            "maxSupportedTransactionVersion" to 0,
-            "commitment" to commitment.name.lowercase(),
-            "preflightCommitment" to commitment.name.lowercase(),
-            "skipPreflight" to skipPreflight,
+        "encoding" to "base64",
+        "maxSupportedTransactionVersion" to 0,
+        "commitment" to commitment.name.lowercase(),
+        "preflightCommitment" to commitment.name.lowercase(),
+        "skipPreflight" to skipPreflight,
     )
 
     override fun addParam(key: String, value: Any): Unit = throw UnsupportedOperationException()

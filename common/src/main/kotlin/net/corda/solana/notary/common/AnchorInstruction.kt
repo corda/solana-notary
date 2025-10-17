@@ -14,7 +14,8 @@ abstract class AnchorInstruction : BorshSerialisable {
     /**
      * The transaction fee payer, which may or may not be of the [signers] mandated by the instruction.
      *
-     * The IDL generated code will assign a default value from one of the instruction's signer (if there any), but this can be overridden.
+     * The IDL generated code will assign a default value from one of the instruction's signer (if there any), but this
+     * can be overridden.
      */
     abstract val txFeePayer: Signer?
 
@@ -35,9 +36,13 @@ abstract class AnchorInstruction : BorshSerialisable {
 data class AccountMeta(val pubkey: PublicKey, val isSigner: Boolean, val isWritable: Boolean)
 
 /**
- * Add the given [AnchorInstruction] to the Solana transaction. Any required signers of the instruction will need to be added manually.
+ * Add the given [AnchorInstruction] to the Solana transaction. Any required signers of the instruction will need to be
+ * added manually.
  */
-fun TransactionBuilder.addAnchorInstruction(instruction: AnchorInstruction, remainingAccounts: List<AccountMeta> = emptyList()) {
+fun TransactionBuilder.addAnchorInstruction(
+    instruction: AnchorInstruction,
+    remainingAccounts: List<AccountMeta> = emptyList(),
+) {
     append { ixBuilder ->
         instruction.addToTx(ixBuilder)
         for (remainingAccount in remainingAccounts) {
@@ -50,12 +55,14 @@ fun TransactionBuilder.addAnchorInstruction(instruction: AnchorInstruction, rema
  * Serialise the given [AnchorInstruction] into a Base64 encoded Solana transaction.
  */
 fun serialiseToTransaction(
-        instruction: AnchorInstruction,
-        remainingAccounts: List<AccountMeta>,
-        latestBlockhash: Blockhash,
-        buffer: ByteBuffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE)
+    instruction: AnchorInstruction,
+    remainingAccounts: List<AccountMeta>,
+    latestBlockhash: Blockhash,
+    buffer: ByteBuffer = ByteBuffer.allocate(Solana.MAX_MESSAGE_SIZE),
 ): String {
-    val txFeePayer = requireNotNull(instruction.txFeePayer) { "Instruction has not specified the transaction fee payer" }
+    val txFeePayer = requireNotNull(instruction.txFeePayer) {
+        "Instruction has not specified the transaction fee payer"
+    }
     return serialiseToTransaction(
         { txBuilder -> txBuilder.addAnchorInstruction(instruction, remainingAccounts) },
         txFeePayer,

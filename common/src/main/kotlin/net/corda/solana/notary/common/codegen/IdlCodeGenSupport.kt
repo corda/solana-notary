@@ -13,5 +13,11 @@ object IdlCodeGenSupport {
     fun seedBytes(value: PublicKey): ByteArray = value.bytes()
 
     // This assumes that the anchor annotation is using .to_le_bytes()
-    fun seedBytes(value: Short): ByteArray = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putShort(value).array()
+    fun seedBytes(value: Short): ByteArray {
+        return ByteBuffer
+            .allocate(2)
+            .order(ByteOrder.LITTLE_ENDIAN)
+            .putShort(value)
+            .array()
+    }
 }

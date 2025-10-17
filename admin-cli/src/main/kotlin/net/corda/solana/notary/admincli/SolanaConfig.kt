@@ -18,20 +18,16 @@ import kotlin.io.path.exists
  * Data class representing the Solana CLI configuration file structure.
  */
 data class SolanaConfigYml(
-        @JsonProperty("json_rpc_url")
-        val jsonRpcUrl: String,
-
-        @JsonProperty("websocket_url")
-        val websocketUrl: String? = null,
-
-        @JsonProperty("keypair_path")
-        val keypairPath: String,
-
-        @JsonProperty("address_labels")
-        val addressLabels: Map<String, String> = emptyMap(),
-
-        @JsonProperty("commitment")
-        val commitment: String,
+    @JsonProperty("json_rpc_url")
+    val jsonRpcUrl: String,
+    @JsonProperty("websocket_url")
+    val websocketUrl: String? = null,
+    @JsonProperty("keypair_path")
+    val keypairPath: String,
+    @JsonProperty("address_labels")
+    val addressLabels: Map<String, String> = emptyMap(),
+    @JsonProperty("commitment")
+    val commitment: String,
 )
 
 /**
@@ -41,7 +37,9 @@ fun String.toSolanaCommitment(): Commitment {
     try {
         return Commitment.valueOf(this.uppercase())
     } catch (_: IllegalArgumentException) {
-        throw IllegalArgumentException("Unknown commitment level: $this. Valid values are: processed, confirmed, finalized")
+        throw IllegalArgumentException(
+            "Unknown commitment level: $this. Valid values are: processed, confirmed, finalized"
+        )
     }
 }
 
@@ -49,10 +47,7 @@ fun String.toSolanaCommitment(): Commitment {
  * Configuration class for Solana blockchain operations.
  * Handles loading configuration from standard Solana CLI paths and initializing required components.
  */
-class SolanaConfig(
-        private val keypairPath: String?,
-        rpcUrl: String?
-) {
+class SolanaConfig(private val keypairPath: String?, rpcUrl: String?) {
     val config: SolanaConfigYml
     val wallet: Signer
     val rpcClient: SolanaJsonRpcClient
@@ -62,10 +57,10 @@ class SolanaConfig(
         private val YAML_MAPPER = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
         private fun getDefaultConfigPath(): Path =
-                Paths.get(System.getProperty("user.home"), ".config", "solana", "cli", "config.yml")
+            Paths.get(System.getProperty("user.home"), ".config", "solana", "cli", "config.yml")
 
         private fun getDefaultWalletPath(): Path =
-                Paths.get(System.getProperty("user.home"), ".config", "solana", "id.json")
+            Paths.get(System.getProperty("user.home"), ".config", "solana", "id.json")
     }
 
     init {
@@ -135,4 +130,4 @@ class SolanaConfig(
  * Custom exception for Solana configuration related errors.
  */
 class SolanaConfigurationException(message: String, cause: Throwable? = null) :
-        RuntimeException(message, cause)
+    RuntimeException(message, cause)

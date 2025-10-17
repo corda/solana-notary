@@ -17,14 +17,13 @@ class Signer(val account: PublicKey, val byteBufferSigner: ByteBufferSigner) {
             val content = file.readText().trim()
             require(content.startsWith("[") && content.endsWith("]"))
             val keyPairBytes = content
-                    .substring(1, content.length - 1)
-                    .splitToSequence(",")
-                    .map {
-                        val byte = it.trim().toInt()
-                        require(byte in 0..255)
-                        byte.toByte()
-                    }
-                    .toList()
+                .substring(1, content.length - 1)
+                .splitToSequence(",")
+                .map {
+                    val byte = it.trim().toInt()
+                    require(byte in 0..255)
+                    byte.toByte()
+                }.toList()
             require(keyPairBytes.size == 64)
             val privateKeyBytes = keyPairBytes.subList(0, Ed25519.SECRET_KEY_SIZE).toByteArray()
             return fromPrivateKey(privateKeyBytes)
@@ -49,13 +48,13 @@ class PrivateKeyByteBufferSigner(privateKey: ByteArray) : ByteBufferSigner {
 
     override fun sign(transaction: ByteBuffer, signature: ByteBuffer) {
         Ed25519.sign(
-                privateKey,
-                0,
-                transaction.array(),
-                transaction.arrayOffset() + transaction.position(),
-                transaction.limit() - transaction.position(),
-                signature.array(),
-                signature.arrayOffset() + signature.position()
+            privateKey,
+            0,
+            transaction.array(),
+            transaction.arrayOffset() + transaction.position(),
+            transaction.limit() - transaction.position(),
+            signature.array(),
+            signature.arrayOffset() + signature.position()
         )
     }
 }
