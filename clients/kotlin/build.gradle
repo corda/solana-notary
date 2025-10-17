@@ -41,6 +41,10 @@ compileKotlin {
     dependsOn('generateKotlinClient')
 }
 
+sourcesJar {
+    dependsOn('generateKotlinClient')
+}
+
 jar {
     archiveBaseName = 'corda-solana-notary-kotlin-client'
 }
