@@ -1,6 +1,6 @@
 plugins {
     java
-//    id "corda.common-publishing"
+    id("r3-artifactory")
 }
 
 tasks.register<Exec>("solanaClean") {
@@ -49,12 +49,3 @@ tasks.register<Exec>("solanaTest") {
 tasks.register<Exec>("rustfmtCheck") {
     commandLine("cargo", "fmt", "--all", "--check")
 }
-
-//publishing {
-//    publications {
-//        maven(MavenPublication) {
-//            artifactId jar.baseName
-//            from components.java
-//        }
-//    }
-//}

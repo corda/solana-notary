@@ -1,6 +1,6 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    alias(libs.plugins.detekt)
+    id("default-kotlin")
+    id("r3-artifactory")
 }
 
 java {
@@ -26,8 +26,6 @@ dependencies {
     "codegenImplementation"(libs.guava)
 
     api(project(":common"))
-
-    detektPlugins(libs.detekt.ktlint.wrapper)
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {
@@ -55,9 +53,4 @@ tasks.named<Jar>("sourcesJar") {
 
 tasks.jar {
     archiveBaseName = "corda-solana-notary-kotlin-client"
-}
-
-detekt {
-    config.setFrom(rootProject.file("detekt.yml"))
-    buildUponDefaultConfig = true
 }
