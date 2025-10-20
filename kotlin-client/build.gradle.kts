@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
+
 plugins {
     id("default-kotlin")
     id("r3-artifactory")
@@ -45,6 +47,9 @@ tasks.register<JavaExec>("generateKotlinClient") {
 
 tasks.compileKotlin {
     dependsOn("generateKotlinClient")
+    compilerOptions {
+        apiVersion = KOTLIN_1_9  // For compatibility with Corda
+    }
 }
 
 tasks.named<Jar>("sourcesJar") {

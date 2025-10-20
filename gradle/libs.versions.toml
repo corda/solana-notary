@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.9.25"  # Use the same minor version of Kotlin as Corda
+kotlin = "2.2.20"
 corda = "4.12.6"
 solana4j = "1.2.2"
 jackson = "2.17.2"

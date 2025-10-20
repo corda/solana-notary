@@ -18,3 +18,11 @@ configure<ArtifactoryPluginConvention> {
         }
     }
 }
+
+extensions.configure<PublishingExtension>("publishing") {
+    publications {
+        create<MavenPublication>("mainPublication") {
+            from(components["java"])
+        }
+    }
+}
