@@ -3,7 +3,7 @@ rootProject.name = "solana-notary"
 include(
     "admin-cli",
     "common",
-    "clients:kotlin",
+    "kotlin-client",
     "notary-program"
 )
 

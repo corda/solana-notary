@@ -15,7 +15,7 @@ application {
 }
 
 dependencies {
-    implementation(project(":clients:kotlin"))
+    implementation(project(":kotlin-client"))
     implementation(libs.corda.tools.cliutils)
     implementation(libs.picocli)
     implementation(libs.jackson.dataformat.yaml)

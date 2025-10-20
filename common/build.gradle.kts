@@ -18,7 +18,3 @@ dependencies {
     implementation(libs.bouncycastle)
     implementation(libs.jackson.kotlin)
 }
-
-tasks.jar {
-    archiveBaseName = "corda-solana-notary-common"
-}

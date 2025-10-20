@@ -34,10 +34,6 @@ tasks.processResources {
     }
 }
 
-tasks.jar {
-    archiveBaseName = "corda-solana-notary-program"
-}
-
 tasks.register<Exec>("solanaTest") {
     commandLine("anchor", "test")
 }

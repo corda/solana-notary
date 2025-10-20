@@ -50,7 +50,3 @@ tasks.compileKotlin {
 tasks.named<Jar>("sourcesJar") {
     dependsOn("generateKotlinClient")
 }
-
-tasks.jar {
-    archiveBaseName = "corda-solana-notary-client"
-}
