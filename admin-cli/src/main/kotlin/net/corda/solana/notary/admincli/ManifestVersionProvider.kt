@@ -1,6 +1,6 @@
 package net.corda.solana.notary.admincli
 
-import net.corda.solana.notary.client.kotlin.CordaNotary
+import net.corda.solana.notary.client.CordaNotary
 import picocli.CommandLine
 
 class ManifestVersionProvider : CommandLine.IVersionProvider {

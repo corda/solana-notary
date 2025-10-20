@@ -1,4 +1,4 @@
-package net.corda.solana.notary.client.kotlincodegen
+package net.corda.solana.notary.kotlincodegen
 
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -6,28 +6,28 @@ import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.JsonNode
 
 class AnchorIdl(
-        val address: String,
-        val metadata: Metadata,
-        val instructions: List<Instruction>,
-        val accounts: List<Account>,
-        val errors: List<Error>,
-        val types: List<AnchorType>
+    val address: String,
+    val metadata: Metadata,
+    val instructions: List<Instruction>,
+    val accounts: List<Account>,
+    val errors: List<Error>,
+    val types: List<AnchorType>
 ) {
     class Metadata(val name: String)
 
     class Instruction(
-            val name: String,
-            val discriminator: ByteArray,
-            val accounts: List<InstructionAccount>,
-            val args: List<Arg>
+        val name: String,
+        val discriminator: ByteArray,
+        val accounts: List<InstructionAccount>,
+        val args: List<Arg>
     )
 
     class InstructionAccount(
-            val name: String,
-            val pda: PDA?,
-            val address: String?,
-            val writable: Boolean = false,
-            val signer: Boolean = false,
+        val name: String,
+        val pda: PDA?,
+        val address: String?,
+        val writable: Boolean = false,
+        val signer: Boolean = false,
     )
 
     class PDA(val seeds: List<Seed>)

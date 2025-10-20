@@ -5,7 +5,7 @@ import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
 import net.corda.solana.notary.admincli.SolanaConfig
-import net.corda.solana.notary.client.kotlin.CordaNotary
+import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.common.rpc.SolanaTransactionException
 import net.corda.solana.notary.common.rpc.sendAndConfirm
 import picocli.CommandLine

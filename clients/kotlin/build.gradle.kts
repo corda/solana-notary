@@ -33,12 +33,12 @@ tasks.register<JavaExec>("generateKotlinClient") {
     dependsOn("compileCodegenJava", generateIdlTask)
     outputs.dir(generatedKotlinDir)
     classpath(layout.buildDirectory.dir("classes/kotlin/codegen"), configurations["codegenRuntimeClasspath"])
-    mainClass = "net.corda.solana.notary.client.kotlincodegen.KotlinClientCodeGeneratorKt"
+    mainClass = "net.corda.solana.notary.kotlincodegen.KotlinClientCodeGeneratorKt"
     doFirst {
         args(
             generateIdlTask.get().outputs.files.singleFile,
             generatedKotlinDir.get(),
-            "net.corda.solana.notary.client.kotlin"
+            "net.corda.solana.notary.client"
         )
     }
 }
@@ -52,5 +52,5 @@ tasks.named<Jar>("sourcesJar") {
 }
 
 tasks.jar {
-    archiveBaseName = "corda-solana-notary-kotlin-client"
+    archiveBaseName = "corda-solana-notary-client"
 }

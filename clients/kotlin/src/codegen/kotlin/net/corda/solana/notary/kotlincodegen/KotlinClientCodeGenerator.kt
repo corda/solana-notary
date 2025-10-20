@@ -1,4 +1,4 @@
-package net.corda.solana.notary.client.kotlincodegen
+package net.corda.solana.notary.kotlincodegen
 
 import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
 import com.fasterxml.jackson.databind.JsonNode
@@ -29,13 +29,13 @@ import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.jvm.jvmStatic
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.Account
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.AnchorType
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.Instruction
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.InstructionAccount
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.PDA
-import net.corda.solana.notary.client.kotlincodegen.AnchorIdl.Seed
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.Account
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorType
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.Instruction
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.InstructionAccount
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.PDA
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.Seed
 import net.corda.solana.notary.common.AnchorInstruction
 import net.corda.solana.notary.common.Signer
 import net.corda.solana.notary.common.codegen.BorshSerialisable

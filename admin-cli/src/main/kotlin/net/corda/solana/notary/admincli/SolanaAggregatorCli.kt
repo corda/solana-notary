@@ -9,7 +9,7 @@ import net.corda.solana.notary.admincli.cmds.InitializeCommand
 import net.corda.solana.notary.admincli.cmds.ListNotariesCommand
 import net.corda.solana.notary.admincli.cmds.RevokeNotaryCommand
 import net.corda.solana.notary.admincli.cmds.ShowNextAvailableNetworkIdCommand
-import net.corda.solana.notary.client.kotlin.CordaNotary
+import net.corda.solana.notary.client.CordaNotary
 import picocli.CommandLine.Command
 
 /**

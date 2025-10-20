@@ -4,7 +4,7 @@ import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
 import net.corda.solana.notary.admincli.SolanaConfig
-import net.corda.solana.notary.client.kotlin.CordaNotary
+import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.common.rpc.getProgramAnchorAccounts
 import picocli.CommandLine
 import java.net.http.HttpClient
