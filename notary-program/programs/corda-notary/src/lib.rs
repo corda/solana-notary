@@ -29,12 +29,18 @@ pub mod corda_notary {
         administration.next_network_id = 0; // Initialize the next network ID
         administration.bump = ctx.bumps.administration; // Use the correct bump for the admin config
         administration.version = ACCOUNT_SCHEMA_VERSION;
-        msg!("Initialized Corda Notary with admin: {}", ctx.accounts.admin.key());
+        msg!(
+            "Initialized Corda Notary with admin: {}",
+            ctx.accounts.admin.key()
+        );
         Ok(())
     }
 
     #[instruction(discriminator = 1)]
-    pub fn authorize_notary(ctx: Context<AuthorizeNotary>, address_to_authorize: Pubkey) -> Result<()> {
+    pub fn authorize_notary(
+        ctx: Context<AuthorizeNotary>,
+        address_to_authorize: Pubkey,
+    ) -> Result<()> {
         let auth = &mut ctx.accounts.authorization;
         auth.bump = ctx.bumps.authorization;
         auth.notary = address_to_authorize; // Store the notary address that is authorized
@@ -58,7 +64,10 @@ pub mod corda_notary {
         network.network_id = administration.next_network_id; // Store the network ID
         network.version = ACCOUNT_SCHEMA_VERSION;
         administration.next_network_id = administration.next_network_id.checked_add(1).unwrap(); // Increment the next network ID
-        msg!("Network account created for network ID: {}", network.network_id);
+        msg!(
+            "Network account created for network ID: {}",
+            network.network_id
+        );
         Ok(())
     }
 

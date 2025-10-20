@@ -22,12 +22,11 @@ pub struct AdminClient {
 
 impl AdminClient {
     pub fn new_with_keypair(svm: Rc<RefCell<LiteSVM>>, payer: Keypair) -> Self {
-        svm.borrow_mut().airdrop(&payer.pubkey(), LAMPORTS_PER_SOL).unwrap();
+        svm.borrow_mut()
+            .airdrop(&payer.pubkey(), LAMPORTS_PER_SOL)
+            .unwrap();
 
-        Self {
-            svm,
-            payer,
-        }
+        Self { svm, payer }
     }
 
     pub fn new(svm: Rc<RefCell<LiteSVM>>) -> Self {
@@ -66,7 +65,11 @@ impl AdminClient {
         build_and_send_transaction(self.svm.clone(), self.payer.insecure_clone(), ix)
     }
 
-    pub fn authorize_notary(&self, address_to_authorize: &Pubkey, network_id: u16) -> TransactionResult {
+    pub fn authorize_notary(
+        &self,
+        address_to_authorize: &Pubkey,
+        network_id: u16,
+    ) -> TransactionResult {
         let authorization_pda = get_authorization_pda_for_address(address_to_authorize);
 
         let ix = Instruction {

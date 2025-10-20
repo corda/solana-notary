@@ -26,8 +26,10 @@ pub fn deploy_notary_program(svm: &mut LiteSVM) {
 }
 
 pub fn get_authorization_pda_for_address(address: &Pubkey) -> Pubkey {
-    let (authorization_pda, _) =
-        Pubkey::find_program_address(&[b"notary_authorization", address.as_ref()], &corda_notary::ID);
+    let (authorization_pda, _) = Pubkey::find_program_address(
+        &[b"notary_authorization", address.as_ref()],
+        &corda_notary::ID,
+    );
     authorization_pda
 }
 
@@ -42,8 +44,10 @@ pub fn get_admin_pda() -> Pubkey {
 }
 
 pub fn get_network_pda(network_id: u16) -> Pubkey {
-    let (network_pda, _) =
-        Pubkey::find_program_address(&[b"network_account", network_id.to_le_bytes().as_ref()], &corda_notary::ID);
+    let (network_pda, _) = Pubkey::find_program_address(
+        &[b"network_account", network_id.to_le_bytes().as_ref()],
+        &corda_notary::ID,
+    );
     network_pda
 }
 
@@ -72,7 +76,9 @@ pub fn build_and_send_transaction(
 
     let blockhash = svm.latest_blockhash();
     let tx = VersionedTransaction::try_new(
-        VersionedMessage::V0(Message::try_compile(&payer.pubkey(), &[instruction], &[], blockhash).unwrap()),
+        VersionedMessage::V0(
+            Message::try_compile(&payer.pubkey(), &[instruction], &[], blockhash).unwrap(),
+        ),
         &[payer.insecure_clone()],
     )
     .unwrap();
@@ -80,7 +86,10 @@ pub fn build_and_send_transaction(
     svm.send_transaction(tx)
 }
 
-pub fn get_pda<T>(svm: Rc<RefCell<LiteSVM>>, pda: &Pubkey) -> Result<Option<T>, anchor_client::ClientError>
+pub fn get_pda<T>(
+    svm: Rc<RefCell<LiteSVM>>,
+    pda: &Pubkey,
+) -> Result<Option<T>, anchor_client::ClientError>
 where
     T: anchor_lang::AccountDeserialize,
 {

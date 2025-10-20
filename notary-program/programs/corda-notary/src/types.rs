@@ -116,10 +116,7 @@ impl Display for StateRef {
 
 impl StateRef {
     pub fn new(txhash: TxId, index: u8) -> StateRef {
-        Self {
-            txhash,
-            index,
-        }
+        Self { txhash, index }
     }
 }
 
