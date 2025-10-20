@@ -14,9 +14,9 @@ pub use types::TxId;
 mod commit;
 use commit::do_commit;
 
-declare_id!("DevPb8sxMzZCzXW3dAKM4BnRSoEJ6PrCrVTF7Pku5KUL");
+declare_id!("notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY");
 
-pub const CURRENT_ACCOUNT_SCHEMA_VERSION: u8 = 1;
+pub const ACCOUNT_SCHEMA_VERSION: u8 = 1;
 
 #[program]
 pub mod corda_notary {
@@ -28,7 +28,7 @@ pub mod corda_notary {
         administration.admin = ctx.accounts.admin.key(); // Set the admin to the signer
         administration.next_network_id = 0; // Initialize the next network ID
         administration.bump = ctx.bumps.administration; // Use the correct bump for the admin config
-        administration.version = CURRENT_ACCOUNT_SCHEMA_VERSION;
+        administration.version = ACCOUNT_SCHEMA_VERSION;
         msg!("Initialized Corda Notary with admin: {}", ctx.accounts.admin.key());
         Ok(())
     }
@@ -39,7 +39,7 @@ pub mod corda_notary {
         auth.bump = ctx.bumps.authorization;
         auth.notary = address_to_authorize; // Store the notary address that is authorized
         auth.network_id = ctx.accounts.network.network_id; // Store the network ID this authorization is valid for
-        auth.version = CURRENT_ACCOUNT_SCHEMA_VERSION;
+        auth.version = ACCOUNT_SCHEMA_VERSION;
         msg!("Authorized notary: {}", ctx.accounts.admin.key());
         Ok(())
     }
@@ -56,7 +56,7 @@ pub mod corda_notary {
         let network = &mut ctx.accounts.network;
         network.bump = ctx.bumps.network;
         network.network_id = administration.next_network_id; // Store the network ID
-        network.version = CURRENT_ACCOUNT_SCHEMA_VERSION;
+        network.version = ACCOUNT_SCHEMA_VERSION;
         administration.next_network_id = administration.next_network_id.checked_add(1).unwrap(); // Increment the next network ID
         msg!("Network account created for network ID: {}", network.network_id);
         Ok(())

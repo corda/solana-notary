@@ -11,7 +11,7 @@ use crate::test_utils::test_helpers::{
     deploy_notary_program, generate_random_corda_tx_id, get_admin_pda, get_authorization_pda_for_address,
     get_network_pda, get_pda, inputs_group,
 };
-use corda_notary::{Administration, Network, NotaryAuthorization, CURRENT_ACCOUNT_SCHEMA_VERSION};
+use corda_notary::{Administration, Network, NotaryAuthorization, ACCOUNT_SCHEMA_VERSION};
 use rstest::*;
 
 #[fixture]
@@ -34,7 +34,7 @@ fn create_network_increments_the_next_network(svm: Rc<RefCell<LiteSVM>>) {
     let network_id: u16 = 0;
     admin_client.create_network(network_id).expect("Failed to create network 0");
     let network = get_pda::<Network>(admin_client.svm.clone(), &get_network_pda(network_id)).unwrap();
-    assert_eq!(CURRENT_ACCOUNT_SCHEMA_VERSION, network.unwrap().version);
+    assert_eq!(ACCOUNT_SCHEMA_VERSION, network.unwrap().version);
     let administration = get_pda::<Administration>(admin_client.svm.clone(), &get_admin_pda()).unwrap();
     assert_eq!(
         1,
@@ -62,7 +62,7 @@ fn notary_authorization_assigns_network_id_correctly(svm: Rc<RefCell<LiteSVM>>) 
             .unwrap()
             .unwrap();
     assert_eq!(0, authorization_notary_network_0.network_id);
-    assert_eq!(CURRENT_ACCOUNT_SCHEMA_VERSION, authorization_notary_network_0.version);
+    assert_eq!(ACCOUNT_SCHEMA_VERSION, authorization_notary_network_0.version);
     let authorization_notary_network_1_address = get_authorization_pda_for_address(&notary_network_1_keypair.pubkey());
     let authorization_notary_network_1 =
         get_pda::<NotaryAuthorization>(admin_client.svm.clone(), &authorization_notary_network_1_address)

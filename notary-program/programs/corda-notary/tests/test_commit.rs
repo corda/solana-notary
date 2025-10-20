@@ -13,7 +13,7 @@ use crate::test_utils::test_helpers::{
     deploy_notary_program, generate_random_corda_tx_id, get_authorization_pda_for_address, input_index, inputs_group,
     ref_index, references_group,
 };
-use corda_notary::CURRENT_ACCOUNT_SCHEMA_VERSION;
+use corda_notary::ACCOUNT_SCHEMA_VERSION;
 use rstest::*;
 use solana_sdk::instruction::InstructionError;
 
@@ -113,12 +113,12 @@ fn can_spend_other_output(notary_client: NotaryClient) {
     let tx_state = notary_client.get_tx_account(tx_id).unwrap().unwrap();
     let tx_state_unspent_bitset = tx_state.unspent_bitset;
     assert_eq!(format!("{tx_state_unspent_bitset:b}"), "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
-    assert_eq!(CURRENT_ACCOUNT_SCHEMA_VERSION, tx_state.version);
+    assert_eq!(ACCOUNT_SCHEMA_VERSION, tx_state.version);
 
     let input_state = notary_client.get_tx_account(input_id).unwrap().unwrap();
     let input_state_unspent_bitset = input_state.unspent_bitset;
     assert_eq!(format!("{input_state_unspent_bitset:b}"), "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111010001");
-    assert_eq!(CURRENT_ACCOUNT_SCHEMA_VERSION, input_state.version);
+    assert_eq!(ACCOUNT_SCHEMA_VERSION, input_state.version);
 
     assert_tx!(notary_client, new_tx_id, true, "Output transaction should exist");
 }

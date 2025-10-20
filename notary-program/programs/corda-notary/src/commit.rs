@@ -1,6 +1,6 @@
 pub use crate::instructions::*;
 use crate::states::*;
-use crate::CURRENT_ACCOUNT_SCHEMA_VERSION;
+use crate::ACCOUNT_SCHEMA_VERSION;
 use crate::{types::*, NotaryError};
 use anchor_lang::{
     prelude::*,
@@ -142,7 +142,7 @@ fn create_corda_tx_account<'a, 'b, 'c, 'info>(
     )?;
 
     let account_data = CordaTxAccount {
-        version: CURRENT_ACCOUNT_SCHEMA_VERSION,
+        version: ACCOUNT_SCHEMA_VERSION,
         unspent_bitset: u128::MAX,
     };
 
