@@ -48,7 +48,7 @@ pipeline {
   }
 
   stages {
-    stage('Genreate Local Solana Keypair') {
+    stage('Generate Local Solana Keypair') {
       steps {
         sh 'solana-keygen new -fo ~/.config/solana/id.json --no-bip39-passphrase'
       }
