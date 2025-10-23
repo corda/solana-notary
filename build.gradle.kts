@@ -1,5 +1,6 @@
 plugins {
     id("pl.allegro.tech.build.axion-release") version "1.21.0"
+    id("com.github.ben-manes.versions") version "0.53.0"
 }
 
 scmVersion {

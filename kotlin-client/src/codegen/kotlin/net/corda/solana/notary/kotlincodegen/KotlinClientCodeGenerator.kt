@@ -93,7 +93,13 @@ fun parseProgram(anchorIdl: AnchorIdl): TypeSpec {
 
     for (anchorType in anchorIdl.types.asReversed()) {
         when (anchorType.type) {
-            is Struct -> parseAnchorStruct(anchorType.name, anchorType.docs, anchorType.type, typesClassBuilder, accountsClassBuilder)
+            is Struct -> parseAnchorStruct(
+                anchorType.name,
+                anchorType.docs,
+                anchorType.type,
+                typesClassBuilder,
+                accountsClassBuilder
+            )
         }
     }
 
@@ -156,7 +162,10 @@ fun parseAnchorStruct(
         if (fixedArrayFields[0].type != "u8") {
             throw UnsupportedOperationException(fixedArrayFields[0].type)
         }
-        anchorTypeBuilder.extendFixedBytesNewtypeStruct(ClassName(outputPackage, programName, "Types", name), fixedArrayFields[0].size)
+        anchorTypeBuilder.extendFixedBytesNewtypeStruct(
+            ClassName(outputPackage, programName, "Types", name),
+            fixedArrayFields[0].size
+        )
         typesClassBuilder.addType(anchorTypeBuilder.build())
     } else {
         throw UnsupportedOperationException("More than one fixed array field")
@@ -188,7 +197,12 @@ fun TypeSpec.Builder.implementBorshSerialisable(
     var totalFixedSize = 0
     val nonFixedSizeProperties = ArrayList<PropertySpec>()
     for (property in serializableProperties) {
-        borshWriteFunctionBuilder.addStatement("%M(%N, %N)", className<BorshUtils>().member("write"), bufferParam, property)
+        borshWriteFunctionBuilder.addStatement(
+            "%M(%N, %N)",
+            className<BorshUtils>().member("write"),
+            bufferParam,
+            property
+        )
         when (val propertyType = property.type) {
             is ParameterizedTypeName -> {
                 if (propertyType.rawType.toClass() != List::class.java) {
@@ -211,7 +225,11 @@ fun TypeSpec.Builder.implementBorshSerialisable(
                 } else {
                     nonFixedSizeProperties += property
                 }
-                borshReadFunctionBuilder.addStatement("val %N = %L", property, readFunctionCall(propertyType, bufferParam))
+                borshReadFunctionBuilder.addStatement(
+                    "val %N = %L",
+                    property,
+                    readFunctionCall(propertyType, bufferParam)
+                )
             }
             else -> throw UnsupportedOperationException("$propertyType")
         }
@@ -314,19 +332,33 @@ fun parseInstruction(instruction: Instruction, programObjectBuilder: TypeSpec.Bu
         if (account.address != null) {
             addToTxFunctionBuilder.addAddressAccount(account.address, ixBuilderParam)
         } else if (account.pda != null) {
-            additionalProperties.addAll(addToTxFunctionBuilder.addPdaAccount(account.pda, account.signer, account.writable, ixBuilderParam))
+            additionalProperties.addAll(
+                addToTxFunctionBuilder.addPdaAccount(account.pda, account.signer, account.writable, ixBuilderParam)
+            )
         } else {
             genericAccounts += account
             val paramName = account.name.toLowerCamel()
 
             if (account.signer) {
-                addToTxFunctionBuilder.addStatement("%N.account(%L.account, %L, %L)", ixBuilderParam, paramName, true, account.writable)
+                addToTxFunctionBuilder.addStatement(
+                    "%N.account(%L.account, %L, %L)",
+                    ixBuilderParam,
+                    paramName,
+                    true,
+                    account.writable
+                )
                 signers += paramName
                 if (account.writable && defaultTxFeePayer == null) {
                     defaultTxFeePayer = paramName
                 }
             } else {
-                addToTxFunctionBuilder.addStatement("%N.account(%L, %L, %L)", ixBuilderParam, paramName, false, account.writable)
+                addToTxFunctionBuilder.addStatement(
+                    "%N.account(%L, %L, %L)",
+                    ixBuilderParam,
+                    paramName,
+                    false,
+                    account.writable
+                )
             }
         }
     }
@@ -380,26 +412,35 @@ fun parseInstruction(instruction: Instruction, programObjectBuilder: TypeSpec.Bu
     programObjectBuilder.addType(instructionClass)
 }
 
-private fun List<AnchorType>.extractReferencedAccountFieldType(referencedAccountField: ReferencedAccountField): TypeName {
+private fun List<AnchorType>.extractReferencedAccountFieldType(
+    referencedAccountField: ReferencedAccountField
+): TypeName {
     return (first { it.name == referencedAccountField.account }.type as Struct)
         .fields.filterIsInstance<Struct.Field.Named>()
         .first { it.name == referencedAccountField.accountFieldName }
         .type.toTypeName()
 }
 
-fun FunSpec.Builder.addPdaAccount(pda: PDA, signer: Boolean, writable: Boolean, ixBuilderParam: ParameterSpec): Set<ReferencedAccountField> {
+fun FunSpec.Builder.addPdaAccount(
+    pda: PDA,
+    signer: Boolean,
+    writable: Boolean,
+    ixBuilderParam: ParameterSpec
+): Set<ReferencedAccountField> {
     val seedMethod = IdlCodeGenSupport::class.member("seedBytes")
     val referencedAccountFields = mutableSetOf<ReferencedAccountField>()
     val seeds = pda.seeds.map { seed ->
         when (seed) {
             is Seed.Arg -> CodeBlock.of("%M(%L)", seedMethod, seed.path.toLowerCamel())
             is Seed.Const -> seed.value.toCodeBlock()
-            // Here we assume that the maximum nesting level is 1, i.e., the seed path is either an account name or a field name within the account.
+            // Here we assume that the maximum nesting level is 1, i.e., the seed path is either an account name or a
+            // field name within the account.
             is Seed.Account -> if (seed.path.contains('.')) {
                 // The seed refers to an account field, so we need to create a ReferencedAccountField
-                val referencedAccountField = ReferencedAccountField(seed.path.substringAfterLast('.'), checkNotNull(seed.account) {
+                val account = checkNotNull(seed.account) {
                     "The \"account\" must be specified for referenced account field seed: $seed"
-                })
+                }
+                val referencedAccountField = ReferencedAccountField(seed.path.substringAfterLast('.'), account)
                 referencedAccountFields.add(referencedAccountField)
                 CodeBlock.of("%M(%L)", seedMethod, referencedAccountField.classPropertyName)
             } else {
@@ -506,8 +547,15 @@ inline fun TypeSpec.Builder.primaryProperties(block: (PrimaryPropertyBuilder) ->
 }
 
 class PrimaryPropertyBuilder(private val typeBuilder: TypeSpec.Builder, private val ctorBuilder: FunSpec.Builder) {
-    fun add(name: String, type: TypeName, defaultValue: CodeBlock? = null, vararg modifiers: KModifier): PrimaryPropertyBuilder {
-        ctorBuilder.addParameter(ParameterSpec.builder(name, type, modifiers.asList() - OVERRIDE).defaultValue(defaultValue).build())
+    fun add(
+        name: String,
+        type: TypeName,
+        defaultValue: CodeBlock? = null,
+        vararg modifiers: KModifier
+    ): PrimaryPropertyBuilder {
+        ctorBuilder.addParameter(
+            ParameterSpec.builder(name, type, modifiers.asList() - OVERRIDE).defaultValue(defaultValue).build()
+        )
         typeBuilder.addProperty(PropertySpec.builder(name, type, modifiers.asList()).initializer(name).build())
         return this
     }
