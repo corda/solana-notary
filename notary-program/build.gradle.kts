@@ -37,7 +37,8 @@ tasks.processResources {
 }
 
 tasks.register<Exec>("solanaTest") {
-    commandLine("anchor", "test")
+    dependsOn("solanaBuild")
+    commandLine("anchor", "test", "--no-idl", "--skip-build")
     environment("GRADLE_VERSION", version.toString())
 }
 
