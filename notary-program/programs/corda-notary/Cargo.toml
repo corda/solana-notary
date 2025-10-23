@@ -1,6 +1,5 @@
 [package]
 name = "corda-notary"
-version = "0.1.0"
 description = "Corda notary program"
 edition = "2021"
 

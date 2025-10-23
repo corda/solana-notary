@@ -16,6 +16,7 @@ tasks.register<Exec>("solanaBuild") {
     inputs.dir("programs/corda-notary/src")
     outputs.file("target/deploy/corda_notary.so")
     commandLine("anchor", "build")
+    environment("GRADLE_VERSION", version.toString())
 }
 
 tasks.register<Exec>("generateIdl") {
@@ -23,6 +24,7 @@ tasks.register<Exec>("generateIdl") {
     val idlFile = layout.buildDirectory.file("idl.json").get()
     outputs.file(idlFile)
     commandLine("anchor", "idl", "build", "-o", idlFile)
+    environment("GRADLE_VERSION", version.toString())
 }
 
 tasks.processResources {
@@ -36,6 +38,7 @@ tasks.processResources {
 
 tasks.register<Exec>("solanaTest") {
     commandLine("anchor", "test")
+    environment("GRADLE_VERSION", version.toString())
 }
 
 tasks.test {

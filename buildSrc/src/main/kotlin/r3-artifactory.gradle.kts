@@ -9,7 +9,7 @@ configure<ArtifactoryPluginConvention> {
     publish {
         contextUrl = "https://software.r3.com/artifactory"
         repository {
-            repoKey = "corda-lib-dev"
+            repoKey = if (version.toString().endsWith("-SNAPSHOT")) "corda-lib-dev" else "corda-lib"
             username = System.getenv("CORDA_ARTIFACTORY_USERNAME")
             password = System.getenv("CORDA_ARTIFACTORY_PASSWORD")
         }
