@@ -30,3 +30,12 @@ tasks.jar {
         attributes["Implementation-Version"] = archiveVersion
     }
 }
+
+tasks.test {
+    val shadowJarTask = tasks.named<Jar>("shadowJar")
+    dependsOn(shadowJarTask)
+    systemProperty("gradle.test.version", version)
+    doFirst {
+        systemProperty("gradle.test.shadowjar", shadowJarTask.get().archiveFile.get())
+    }
+}
