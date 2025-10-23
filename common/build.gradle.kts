@@ -14,9 +14,8 @@ java {
 }
 
 dependencies {
-    api(libs.solana4j.core)
-    api(libs.solana4j.rpc)
-
+    implementation(libs.solana4j.core)
+    implementation(libs.solana4j.rpc)
     implementation(libs.bouncycastle)
     implementation(libs.jackson.kotlin)
 }

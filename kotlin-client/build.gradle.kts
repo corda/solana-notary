@@ -26,8 +26,10 @@ dependencies {
     "codegenImplementation"(libs.kotlinpoet)
     "codegenImplementation"(libs.jackson.kotlin)
     "codegenImplementation"(libs.guava)
+    "codegenImplementation"(libs.solana4j.core)
 
-    api(project(":common"))
+    implementation(project(":common"))
+    implementation(libs.solana4j.core)
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {

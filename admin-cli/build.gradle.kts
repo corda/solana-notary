@@ -16,11 +16,14 @@ application {
 
 dependencies {
     implementation(project(":kotlin-client"))
+    implementation(project(":common"))
     implementation(libs.corda.tools.cliutils)
     implementation(libs.picocli)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.kotlin)
     implementation(libs.bouncycastle)
+    implementation(libs.solana4j.core)
+    implementation(libs.solana4j.rpc)
 
     runtimeOnly(libs.logback)
 }
