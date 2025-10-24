@@ -1,5 +1,5 @@
 plugins {
-    java
+    id("default-java")
     id("r3-artifactory")
 }
 

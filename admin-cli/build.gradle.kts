@@ -4,12 +4,6 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
-}
-
 application {
     mainClass = "net.corda.solana.notary.admincli.SolanaAggregatorCliKt"
 }

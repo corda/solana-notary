@@ -1,14 +1,10 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_1_9
-
 plugins {
-    id("default-kotlin")
+    id("corda-kotlin")
+    `java-library`
     id("r3-artifactory")
 }
 
 java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
-    }
     withSourcesJar()
     withJavadocJar()
 }
@@ -49,9 +45,6 @@ tasks.register<JavaExec>("generateKotlinClient") {
 
 tasks.compileKotlin {
     dependsOn("generateKotlinClient")
-    compilerOptions {
-        apiVersion = KOTLIN_1_9  // For compatibility with Corda
-    }
 }
 
 tasks.named<Jar>("sourcesJar") {

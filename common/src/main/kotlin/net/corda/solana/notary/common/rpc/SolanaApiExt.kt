@@ -69,15 +69,8 @@ fun SolanaApi.sendAndConfirm(
     while (true) {
         val txResponse = getTransaction(signature, rpcParams).checkResponse("getTransaction")
         if (txResponse != null) {
-            val err = txResponse.metadata.err
-            if (err != null) {
-                throw SolanaTransactionException(
-                    "Transaction failed: $txResponse",
-                    err,
-                    txResponse.metadata.logMessages
-                )
-            }
-            return txResponse
+            val err = txResponse.metadata.err ?: return txResponse
+            throw SolanaTransactionException("Transaction failed: $txResponse", err, txResponse.metadata.logMessages)
         }
         val blockHeight = getBlockHeight(rpcParams).checkResponse("getBlockHeight")!!
         // Keep polling getTransaction until the blockhash used in the transaction has expired. It's only until then can

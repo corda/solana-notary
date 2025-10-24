@@ -1,5 +1,6 @@
 [versions]
-kotlin = "2.2.20"
+kotlin-main = "2.2.20"
+kotlin-corda = "1.9.25"
 corda = "4.12.6"
 solana4j = "1.2.2"
 jackson = "2.17.2"
