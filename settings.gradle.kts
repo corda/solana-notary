@@ -4,7 +4,7 @@ include(
     "admin-cli",
     "common",
     "kotlin-client",
-    "notary-program",
+    "solana-program",
     "notary-test"
 )
 

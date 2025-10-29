@@ -29,7 +29,7 @@ dependencies {
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {
-    val generateIdlTask = project(":notary-program").tasks.named("generateIdl")
+    val generateIdlTask = project(":solana-program").tasks.named("generateIdl")
     dependsOn("compileCodegenJava", generateIdlTask)
     outputs.dir(generatedKotlinDir)
     classpath(layout.buildDirectory.dir("classes/kotlin/codegen"), configurations["codegenRuntimeClasspath"])

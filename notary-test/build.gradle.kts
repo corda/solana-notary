@@ -15,5 +15,5 @@ dependencies {
     implementation(libs.solana4j.core)
     implementation(libs.solana4j.rpc)
 
-    runtimeOnly(project(":notary-program"))
+    runtimeOnly(project(":solana-program"))
 }
