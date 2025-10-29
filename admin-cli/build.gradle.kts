@@ -20,6 +20,8 @@ dependencies {
     implementation(libs.solana4j.rpc)
 
     runtimeOnly(libs.logback)
+
+    testImplementation(project(":notary-test"))
 }
 
 tasks.jar {

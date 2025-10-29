@@ -16,10 +16,10 @@ class InitializeCommand : CliWrapperBase("initialize", "Initializes the Corda No
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl) }
+    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
 
     override fun runProgram(): Int {
-        println("Initializing notary program ${CordaNotary.PROGRAM_ID}...")
+        println("Initializing notary program ${CordaNotary.PROGRAM_ID.base58()}...")
 
         val instruction = CordaNotary.Initialize(solanaConfig.wallet)
         return try {

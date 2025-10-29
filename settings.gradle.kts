@@ -4,7 +4,8 @@ include(
     "admin-cli",
     "common",
     "kotlin-client",
-    "notary-program"
+    "notary-program",
+    "notary-test"
 )
 
 @Suppress("UnstableApiUsage")

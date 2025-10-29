@@ -17,7 +17,7 @@ class CreateNetworkCommand :
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl) }
+    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
 
     override fun runProgram(): Int {
         println("Creating network ...")

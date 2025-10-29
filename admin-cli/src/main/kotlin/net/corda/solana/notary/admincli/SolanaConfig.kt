@@ -47,7 +47,7 @@ fun String.toSolanaCommitment(): Commitment {
  * Configuration class for Solana blockchain operations.
  * Handles loading configuration from standard Solana CLI paths and initializing required components.
  */
-class SolanaConfig(private val keypairPath: String?, rpcUrl: String?) {
+class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment: Commitment?) {
     val config: SolanaConfigYml
     val wallet: Signer
     val rpcClient: SolanaJsonRpcClient
@@ -69,7 +69,7 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?) {
 
             config = loadConfigFromFile()
             rpcClient = createRpcClient(rpcUrl ?: config.jsonRpcUrl)
-            commitment = config.commitment.toSolanaCommitment()
+            this.commitment = commitment ?: config.commitment.toSolanaCommitment()
         } catch (e: Exception) {
             throw SolanaConfigurationException("Failed to initialize Solana configuration", e)
         }

@@ -1,5 +1,6 @@
 package net.corda.solana.notary.admincli
 
+import com.lmax.solana4j.client.api.Commitment
 import picocli.CommandLine.Option
 
 class SharedCliOptions {
@@ -19,4 +20,14 @@ class SharedCliOptions {
         required = false
     )
     var rpcUrl: String? = null
+
+    @Option(
+        names = ["--commitment", "-c"],
+        description = [
+            "Optional: The commitment level to wait for on the cluster",
+            "Default: taken from the ~/.config/solana/cli/config.yaml file"
+        ],
+        required = false
+    )
+    var commitment: Commitment? = null
 }

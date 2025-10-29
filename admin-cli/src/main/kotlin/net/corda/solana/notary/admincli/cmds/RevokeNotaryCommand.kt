@@ -25,7 +25,7 @@ class RevokeNotaryCommand :
         required = true
     )
     private lateinit var notaryAddress: String
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl) }
+    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
 
     override fun runProgram(): Int {
         solanaConfig.validateNotaryAddress(notaryAddress)

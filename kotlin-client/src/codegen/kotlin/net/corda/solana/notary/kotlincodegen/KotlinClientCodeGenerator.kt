@@ -28,14 +28,8 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
+import com.squareup.kotlinpoet.jvm.jvmField
 import com.squareup.kotlinpoet.jvm.jvmStatic
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.Account
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorType
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.Instruction
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.InstructionAccount
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.PDA
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.Seed
 import net.corda.solana.notary.common.AnchorInstruction
 import net.corda.solana.notary.common.Signer
 import net.corda.solana.notary.common.codegen.BorshSerialisable
@@ -43,6 +37,13 @@ import net.corda.solana.notary.common.codegen.BorshUtils
 import net.corda.solana.notary.common.codegen.FixedBytesNewtypeStruct
 import net.corda.solana.notary.common.codegen.IdlCodeGenSupport
 import net.corda.solana.notary.common.codegen.U128
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.Account
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorType
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.Instruction
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.InstructionAccount
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.PDA
+import net.corda.solana.notary.kotlincodegen.AnchorIdl.Seed
 import java.nio.ByteBuffer
 import javax.annotation.processing.Generated
 import kotlin.io.path.Path
@@ -66,7 +67,7 @@ fun main(args: Array<String>) {
     programName = anchorIdl.metadata.name.toUpperCamel()
 
     programId = PropertySpec.builder("PROGRAM_ID", PublicKey::class)
-        .jvmStatic()
+        .jvmField()
         .initializer("%M(%S)", Solana::class.member("account"), anchorIdl.address)
         .build()
 

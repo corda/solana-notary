@@ -1,3 +1,5 @@
+import java.nio.file.Files
+
 plugins {
     java
     id("com.adarshr.test-logger")
@@ -21,4 +23,9 @@ dependencies {
 
 tasks.withType<Test> {
     useJUnitPlatform()
+    doFirst {
+        val tempDir = layout.buildDirectory.dir("junit-temp").get().asFile.toPath()
+        Files.createDirectories(tempDir)
+        systemProperty("java.io.tmpdir", tempDir)
+    }
 }

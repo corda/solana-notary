@@ -32,7 +32,7 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
     )
     private lateinit var networkId: String
 
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl) }
+    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
 
     override fun runProgram(): Int {
         solanaConfig.validateNotaryAddress(notaryAddress)

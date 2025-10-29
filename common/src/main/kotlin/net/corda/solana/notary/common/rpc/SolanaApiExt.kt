@@ -1,3 +1,5 @@
+@file:JvmName("SolanaApiExt")
+
 package net.corda.solana.notary.common.rpc
 
 import com.lmax.solana4j.Solana
@@ -25,6 +27,7 @@ private const val SIMULATION_ERROR_CODE = -32002L
  * @throws SolanaTransactionException If the transaction was rejected.
  * @throws SolanaTransactionExpiredException If the transaction was not processed and has expired.
  */
+@JvmOverloads
 fun SolanaApi.sendAndConfirm(
     instruction: AnchorInstruction,
     remainingAccounts: List<AccountMeta> = emptyList(),
@@ -36,6 +39,7 @@ fun SolanaApi.sendAndConfirm(
     return sendAndConfirm(transactionBlob, latestBlockhash.lastValidBlockHeight, rpcParams)
 }
 
+@JvmOverloads
 fun SolanaApi.sendAndConfirm(
     instructions: (TransactionBuilder) -> Unit,
     txFeePayer: Signer,
@@ -59,6 +63,7 @@ fun SolanaApi.sendAndConfirm(
  * @throws SolanaTransactionException If the transaction was rejected.
  * @throws SolanaTransactionExpiredException If the transaction was not processed and has expired.
  */
+@JvmOverloads
 fun SolanaApi.sendAndConfirm(
     transactionBlob: String,
     lastValidBlockHeight: Int,
@@ -87,6 +92,7 @@ fun SolanaApi.sendAndConfirm(
     }
 }
 
+@JvmOverloads
 fun SolanaApi.sendTransactionAndCheck(
     transactionBlob: String,
     rpcParams: SolanaClientOptionalParams = DefaultRpcParams(),
@@ -117,6 +123,7 @@ fun SolanaApi.sendTransactionAndCheck(
  *
  * @throws SolanaTransactionException If the transaction was rejected.
  */
+@JvmOverloads
 fun SolanaApi.simulate(
     transactionBlob: String,
     rpcParams: SolanaClientOptionalParams = DefaultRpcParams(),
