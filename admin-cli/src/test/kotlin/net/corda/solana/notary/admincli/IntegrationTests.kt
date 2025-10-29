@@ -2,7 +2,6 @@ package net.corda.solana.notary.admincli
 
 import com.lmax.solana4j.Solana
 import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClient
-import net.corda.solana.notary.test.SolanaTestValidator
 import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.client.CordaNotary.Types.FlaggedU8
 import net.corda.solana.notary.client.CordaNotary.Types.StateRefGroup
@@ -12,6 +11,7 @@ import net.corda.solana.notary.common.Signer
 import net.corda.solana.notary.common.rpc.SolanaTransactionException
 import net.corda.solana.notary.common.rpc.checkResponse
 import net.corda.solana.notary.common.rpc.sendAndConfirm
+import net.corda.solana.notary.test.SolanaTestValidator
 import net.corda.solana.notary.test.TestingSupport
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy
