@@ -16,7 +16,7 @@ import picocli.CommandLine.Command
  * Main CLI command class for Solana operations.
  */
 @Command(versionProvider = ManifestVersionProvider::class)
-class SolanaAggregatorCli : CordaCliWrapper(
+class SolanaNotaryAdminCli : CordaCliWrapper(
     "solana-notary-admin",
     "CLI tool for admin operations on the Solana notary program (${CordaNotary.PROGRAM_ID.base58()})"
 ) {
@@ -29,14 +29,12 @@ class SolanaAggregatorCli : CordaCliWrapper(
         ShowNextAvailableNetworkIdCommand()
     )
 
-    override fun runProgram() = run()
-
-    fun run(): Int {
+    override fun runProgram(): Int {
         printHelp()
         return ExitCodes.FAILURE
     }
 }
 
 fun main(args: Array<String>) {
-    SolanaAggregatorCli().start(args)
+    SolanaNotaryAdminCli().start(args)
 }

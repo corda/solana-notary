@@ -5,14 +5,14 @@ plugins {
 }
 
 application {
-    mainClass = "net.corda.solana.notary.admincli.SolanaAggregatorCliKt"
+    mainClass = "net.corda.solana.notary.admincli.SolanaNotaryAdminCliKt"
 }
 
 dependencies {
     implementation(project(":kotlin-client"))
     implementation(project(":common"))
-    implementation(libs.corda.tools.cliutils)
     implementation(libs.picocli)
+    implementation(libs.slf4j.api)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.kotlin)
     implementation(libs.bouncycastle)

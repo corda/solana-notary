@@ -9,10 +9,7 @@ import java.net.Socket;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class SolanaTestValidator implements AutoCloseable {
@@ -122,30 +119,15 @@ public class SolanaTestValidator implements AutoCloseable {
             return this;
         }
 
-        private static int availablePort(Integer assignedPort) throws IOException {
-            if (assignedPort != null) {
-                return assignedPort;
-            }
-            try (var server = new ServerSocket(0)) {
-                return server.getLocalPort();
-            }
-        }
-
-        private static void addPortArg(String portName, Integer assignedPort, List<String> args) {
-            if (assignedPort != null) {
-                args.add("--" + portName + "-port");
-                args.add(assignedPort.toString());
-            }
-        }
-
         public SolanaTestValidator start() throws IOException {
             var rpcPort = this.rpcPort;
             var gossipPort = this.gossipPort;
             var faucetPort = this.faucetPort;
             if (dynamicPorts) {
-                rpcPort = availablePort(rpcPort);
-                gossipPort = availablePort(gossipPort);
-                faucetPort = availablePort(faucetPort);
+                var takenPorts = new HashSet<Integer>();
+                rpcPort = availablePort(takenPorts);
+                gossipPort = availablePort(takenPorts);
+                faucetPort = availablePort(takenPorts);
             }
 
             final var command = new ArrayList<String>();
@@ -170,6 +152,24 @@ public class SolanaTestValidator implements AutoCloseable {
             });
             var process = new ProcessBuilder(command).inheritIO().start();
             return new SolanaTestValidator(process, rpcPort != null ? rpcPort : 8899);
+        }
+
+        private static int availablePort(Set<Integer> takenPorts) throws IOException {
+            while (true) {
+                try (var server = new ServerSocket(0)) {
+                    var port = server.getLocalPort();
+                    if (takenPorts.add(port)) {
+                        return port;
+                    }
+                }
+            }
+        }
+
+        private static void addPortArg(String portName, Integer assignedPort, List<String> args) {
+            if (assignedPort != null) {
+                args.add("--" + portName + "-port");
+                args.add(assignedPort.toString());
+            }
         }
     }
 }

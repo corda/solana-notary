@@ -1,0 +1,193 @@
+package net.corda.cliutils
+
+import org.slf4j.LoggerFactory
+import org.slf4j.event.Level
+import picocli.CommandLine
+import picocli.CommandLine.Command
+import picocli.CommandLine.DefaultExceptionHandler
+import picocli.CommandLine.ExecutionException
+import picocli.CommandLine.Help
+import picocli.CommandLine.ITypeConverter
+import picocli.CommandLine.Option
+import picocli.CommandLine.ParameterException
+import picocli.CommandLine.ParseResult
+import picocli.CommandLine.RunLast
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.util.Locale
+import java.util.concurrent.Callable
+import kotlin.system.exitProcess
+
+// Copied from Corda to avoid the dependency just for this.
+// TODO This is overkill, replace with vanilla picocli
+
+object ShellConstants {
+    const val RED = "\u001B[31m"
+    const val RESET = "\u001B[0m"
+}
+
+fun isOsWindows(): Boolean = System.getProperty("os.name").startsWith("Windows")
+
+fun CordaCliWrapper.start(args: Array<String>) {
+    this.args = args
+
+    val defaultAnsiMode = if (isOsWindows()) Help.Ansi.ON else Help.Ansi.AUTO
+
+    val exceptionHandler = object : DefaultExceptionHandler<List<Any>>() {
+        override fun handleParseException(ex: ParameterException?, args: Array<out String>?): List<Any> {
+            super.handleParseException(ex, args)
+            return listOf(ExitCodes.FAILURE)
+        }
+
+        override fun handleExecutionException(ex: ExecutionException, parseResult: ParseResult?): List<Any> {
+            val throwable = ex.cause ?: ex
+            if (this@start.verbose || this@start.subCommands.any { it.verbose }) {
+                throwable.printStackTrace()
+            }
+            printError(throwable.message ?: "Use --verbose for more details")
+            return listOf(ExitCodes.FAILURE)
+        }
+    }
+
+    @Suppress("SpreadOperator")
+    val results = cmd.parseWithHandlers(
+        RunLast().useOut(System.out).useAnsi(defaultAnsiMode),
+        exceptionHandler.useErr(System.err).useAnsi(defaultAnsiMode),
+        *args
+    )
+
+    // If an error code has been returned, use this and exit
+    results?.firstOrNull()?.let {
+        if (it is Int) {
+            exitProcess(it)
+        } else {
+            exitProcess(ExitCodes.FAILURE)
+        }
+    }
+
+    // If no results returned, picocli ran something without invoking the main program, e.g. --help or --version, so
+    // exit successfully
+    exitProcess(ExitCodes.SUCCESS)
+}
+
+@Command(
+    mixinStandardHelpOptions = true,
+    sortOptions = false,
+    showDefaultValues = true,
+    synopsisHeading = "%n@|bold,underline Usage|@:%n%n",
+    descriptionHeading = "%n@|bold,underline Description|@:%n%n",
+    parameterListHeading = "%n@|bold,underline Parameters|@:%n%n",
+    optionListHeading = "%n@|bold,underline Options|@:%n%n",
+    commandListHeading = "%n@|bold,underline Commands|@:%n%n"
+)
+abstract class CliWrapperBase(val alias: String, val description: String) : Callable<Int> {
+    companion object {
+        private val logger by lazy { LoggerFactory.getLogger(CliWrapperBase::class.java) }
+    }
+
+    // Raw args are provided for use in logging - this is a lateinit var rather than a constructor parameter as the
+    // class needs to be parameterless for autocomplete to work.
+    lateinit var args: Array<String>
+
+    @Option(
+        names = ["-v", "--verbose", "--log-to-console"],
+        description = ["If set, prints logging to the console as well as to a file."]
+    )
+    var verbose: Boolean = false
+
+    @Option(
+        names = ["--logging-level"],
+        completionCandidates = LoggingLevelConverter.LoggingLevels::class,
+        description = ["Enable logging at this level and higher. Possible values: \${COMPLETION-CANDIDATES}"],
+        converter = [LoggingLevelConverter::class]
+    )
+    var loggingLevel: Level = Level.INFO
+
+    // This needs to be called before loggers (See: NodeStartup.kt:51 logger called by lazy, initLogging happens
+    // before). Node's logging is more rich. In corda configurations two properties, defaultLoggingLevel and
+    // consoleLogLevel, are usually used.
+    open fun initLogging(): Boolean {
+        System.setProperty("defaultLogLevel", specifiedLogLevel) // These properties are referenced from the XML config
+        // file.
+        if (verbose) {
+            System.setProperty("consoleLogLevel", specifiedLogLevel)
+        }
+        System.setProperty("log-path", Paths.get(".").toString())
+        return true
+    }
+
+    // Override this function with the actual method to be run once all the arguments have been parsed. The return
+    // number is the exit code to be returned
+    abstract fun runProgram(): Int
+
+    override fun call(): Int {
+        initLogging()
+        logger.info("Application Args: ${args.joinToString(" ")}")
+        return runProgram()
+    }
+
+    val specifiedLogLevel: String by lazy {
+        System.getProperty("log4j2.level")?.lowercase(Locale.ENGLISH) ?: loggingLevel.name.lowercase(Locale.ENGLISH)
+    }
+}
+
+/**
+ * Simple base class for handling help, version, verbose and logging-level commands.
+ * As versionProvider information from the MANIFEST file is used. It can be overwritten by custom version providers
+ * (see: Node) Picocli will prioritise versionProvider from the `@Command` annotation on the subclass,
+ * see: https://picocli.info/#_reuse_combinations
+ */
+abstract class CordaCliWrapper(alias: String, description: String) : CliWrapperBase(alias, description) {
+    companion object {
+        private val logger by lazy { LoggerFactory.getLogger(CordaCliWrapper::class.java) }
+    }
+
+    protected open fun additionalSubCommands(): Set<CliWrapperBase> = emptySet()
+
+    val cmd by lazy {
+        CommandLine(this).apply {
+            // Make sure any provided paths are absolute. Relative paths have caused issues and are less clear in logs.
+            registerConverter(Path::class.java) { Paths.get(it).toAbsolutePath().normalize() }
+            commandSpec.name(alias)
+            commandSpec.usageMessage().description(description)
+            subCommands.forEach {
+                val subCommand = CommandLine(it)
+                it.args = args
+                subCommand.commandSpec.usageMessage().description(it.description)
+                commandSpec.addSubcommand(it.alias, subCommand)
+            }
+        }
+    }
+
+    val subCommands: Set<CliWrapperBase> by lazy {
+        additionalSubCommands()
+    }
+
+    override fun call(): Int {
+        if (!initLogging()) {
+            return ExitCodes.FAILURE
+        }
+        logger.debug("Application Args: {}", args.joinToString(" "))
+        return runProgram()
+    }
+
+    fun printHelp() = cmd.usage(System.out)
+}
+
+fun printError(message: String) = System.err.println("${ShellConstants.RED}$message${ShellConstants.RESET}")
+
+/**
+ * Converter from String to slf4j logging Level.
+ */
+class LoggingLevelConverter : ITypeConverter<Level> {
+    override fun convert(value: String): Level {
+        return Level.valueOf(value.uppercase())
+    }
+
+    class LoggingLevels : ArrayList<String>(Level.entries.map { it.toString() })
+}
+
+object ExitCodes {
+    const val SUCCESS: Int = 0
+    const val FAILURE: Int = 1
+}
