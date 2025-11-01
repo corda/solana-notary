@@ -15,7 +15,7 @@ tasks.register<Exec>("solanaBuild") {
     inputs.files("Cargo.toml", "programs/corda-notary/Cargo.toml")
     inputs.dir("programs/corda-notary/src")
     outputs.file("target/deploy/corda_notary.so")
-    commandLine("anchor", "build")
+    commandLine("anchor", "build", "--no-idl")
     environment("GRADLE_VERSION", version.toString())
 }
 
@@ -38,8 +38,7 @@ tasks.processResources {
 
 tasks.register<Exec>("solanaTest") {
     dependsOn("solanaBuild")
-    commandLine("anchor", "test", "--no-idl", "--skip-build")
-    environment("GRADLE_VERSION", version.toString())
+    commandLine("cargo", "test")
 }
 
 tasks.test {

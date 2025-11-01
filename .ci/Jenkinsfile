@@ -48,9 +48,9 @@ pipeline {
   }
 
   stages {
-    stage('Generate Local Solana Keypair') {
+    stage('Generate Local Wallet') {
       steps {
-        sh 'solana-keygen new -fo ~/.config/solana/id.json --no-bip39-passphrase'
+        sh 'solana-keygen new -f --no-bip39-passphrase'
       }
     }
     stage('Test and Publish') {
@@ -58,6 +58,11 @@ pipeline {
         authenticateGradleWrapper()
         sh './gradlew --no-daemon clean check artifactoryPublish'
       }
+    }
+  }
+  post {
+    always {
+      junit '**/build/test-results/**/*.xml'
     }
   }
 }
