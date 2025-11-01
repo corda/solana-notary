@@ -36,8 +36,17 @@ tasks.processResources {
     }
 }
 
-tasks.register<Exec>("solanaTest") {
+tasks.register<Exec>("compileSolanaTest") {
     dependsOn("solanaBuild")
+    commandLine("cargo", "test", "--no-run")
+}
+
+tasks.testClasses {
+    dependsOn("compileSolanaTest")
+}
+
+tasks.register<Exec>("solanaTest") {
+    dependsOn("compileSolanaTest")
     commandLine("cargo", "test")
 }
 

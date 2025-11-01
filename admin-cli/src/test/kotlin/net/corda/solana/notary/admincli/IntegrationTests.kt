@@ -122,7 +122,17 @@ class IntegrationTests {
 
     private fun execCmd(cmd: String, vararg cmdArgs: Any): String {
         val args = arrayListOf(cmd)
-        args.addAll(listOf("-k", adminFile.toString(), "-u", testValidator.rpcEndpoint.toString(), "-c", "CONFIRMED"))
+        args.addAll(
+            listOf(
+                "-k",
+                adminFile.toString(),
+                "-u",
+                testValidator.rpcEndpoint.toString(),
+                "-c",
+                "CONFIRMED",
+                "-v"
+            )
+        )
         cmdArgs.mapTo(args) { it.toString() }
         return exec(*args.toTypedArray())
     }
