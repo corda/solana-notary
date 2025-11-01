@@ -51,6 +51,7 @@ pipeline {
     stage('Generate Local Wallet') {
       steps {
         sh 'solana-keygen new -f --no-bip39-passphrase'
+        sh 'solana config get'
       }
     }
     stage('Test and Publish') {
