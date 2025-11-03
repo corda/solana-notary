@@ -22,7 +22,7 @@ class ListNotariesCommand :
     override fun runProgram(): Int {
         val parsedNotaries = getProgramAnchorAccounts(
             CordaNotary.PROGRAM_ID,
-            solanaConfig.config.jsonRpcUrl,
+            solanaConfig.rpcUrl,
             HttpClient.newHttpClient(),
             CordaNotary.Accounts.NotaryAuthorization.DISCRIMINATOR,
             CordaNotary.Accounts.NotaryAuthorization::borshRead
@@ -32,7 +32,7 @@ class ListNotariesCommand :
 
         val parsedNetworks = getProgramAnchorAccounts(
             CordaNotary.PROGRAM_ID,
-            solanaConfig.config.jsonRpcUrl,
+            solanaConfig.rpcUrl,
             HttpClient.newHttpClient(),
             CordaNotary.Accounts.Network.DISCRIMINATOR,
             CordaNotary.Accounts.Network::borshRead

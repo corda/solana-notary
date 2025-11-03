@@ -9,7 +9,6 @@ import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClient
 import net.corda.solana.notary.common.Signer
 import java.io.IOException
 import java.net.http.HttpClient
-import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -48,8 +47,9 @@ fun String.toSolanaCommitment(): Commitment {
  * Handles loading configuration from standard Solana CLI paths and initializing required components.
  */
 class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment: Commitment?) {
-    val config: SolanaConfigYml
+    val config: SolanaConfigYml?
     val wallet: Signer
+    val rpcUrl: String
     val rpcClient: SolanaJsonRpcClient
     val commitment: Commitment
 
@@ -64,36 +64,31 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment
     }
 
     init {
-        try {
-            wallet = loadWalletFromFile()
-
-            config = loadConfigFromFile()
-            rpcClient = createRpcClient(rpcUrl ?: config.jsonRpcUrl)
-            this.commitment = commitment ?: config.commitment.toSolanaCommitment()
-        } catch (e: Exception) {
-            throw SolanaConfigurationException("Failed to initialize Solana configuration", e)
+        wallet = loadWalletFromFile()
+        config = loadConfigFromFile()
+        this.rpcUrl = requireNotNull(rpcUrl ?: config?.jsonRpcUrl) {
+            "Solana config file doesn't exist to determine RPC URL, and nor was it provided as a flag"
+        }
+        rpcClient = createRpcClient(this.rpcUrl)
+        this.commitment = requireNotNull(commitment ?: config?.commitment?.toSolanaCommitment()) {
+            "Solana config file doesn't exist to determine commitment level, and nor was it provided as a flag"
         }
     }
 
     fun validateNotaryAddress(notaryAddress: String) {
-        if (notaryAddress.isBlank()) {
-            throw IllegalArgumentException("Notary address cannot be empty")
-        }
+        require(notaryAddress.isNotBlank()) { "Notary address cannot be empty" }
     }
 
     /**
      * Loads the Solana configuration from the standard CLI config file.
      */
-    private fun loadConfigFromFile(): SolanaConfigYml {
+    private fun loadConfigFromFile(): SolanaConfigYml? {
         val configPath = getDefaultConfigPath()
-
-        if (!Files.exists(configPath)) {
-            throw SolanaConfigurationException("Solana config file not found at: $configPath")
+        if (!configPath.exists()) {
+            return null
         }
-
         return try {
-            val yamlContent = Files.readString(configPath)
-            YAML_MAPPER.readValue(yamlContent, SolanaConfigYml::class.java)
+            YAML_MAPPER.readValue(configPath.toFile(), SolanaConfigYml::class.java)
         } catch (e: IOException) {
             throw SolanaConfigurationException("Failed to read or parse config file at: $configPath", e)
         }
