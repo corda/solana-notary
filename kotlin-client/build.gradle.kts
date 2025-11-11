@@ -12,17 +12,21 @@ java {
 private val generatedKotlinDir = layout.buildDirectory.dir("generated/src/main/kotlin")
 
 sourceSets {
-    create("codegen").java.srcDir("src/codegen/kotlin")
-    main.get().java.srcDir(generatedKotlinDir)
+    create("codeGenerator")
+    main {
+        java.srcDir(generatedKotlinDir)
+    }
+}
+
+val codeGeneratorImplementation by configurations.getting {
+    extendsFrom(configurations.implementation.get())
 }
 
 dependencies {
-    "codegenImplementation"(project(":common"))
-    "codegenImplementation"("org.jetbrains.kotlin:kotlin-stdlib")
-    "codegenImplementation"(libs.kotlinpoet)
-    "codegenImplementation"(libs.jackson.kotlin)
-    "codegenImplementation"(libs.guava)
-    "codegenImplementation"(libs.solana4j.core)
+    codeGeneratorImplementation("org.jetbrains.kotlin:kotlin-stdlib")
+    codeGeneratorImplementation(libs.kotlinpoet)
+    codeGeneratorImplementation(libs.jackson.kotlin)
+    codeGeneratorImplementation(libs.guava)
 
     implementation(project(":common"))
     implementation(libs.solana4j.core)
@@ -30,10 +34,10 @@ dependencies {
 
 tasks.register<JavaExec>("generateKotlinClient") {
     val generateIdlTask = project(":solana-program").tasks.named("generateIdl")
-    dependsOn("compileCodegenJava", generateIdlTask)
+    dependsOn(generateIdlTask)
     outputs.dir(generatedKotlinDir)
-    classpath(layout.buildDirectory.dir("classes/kotlin/codegen"), configurations["codegenRuntimeClasspath"])
-    mainClass = "net.corda.solana.notary.kotlincodegen.KotlinClientCodeGeneratorKt"
+    classpath = sourceSets["codeGenerator"].runtimeClasspath
+    mainClass = "net.corda.solana.notary.client.generator.KotlinClientCodeGeneratorKt"
     doFirst {
         args(
             generateIdlTask.get().outputs.files.singleFile,

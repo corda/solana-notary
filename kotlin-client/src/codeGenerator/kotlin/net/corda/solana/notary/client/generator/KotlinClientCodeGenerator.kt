@@ -1,4 +1,4 @@
-package net.corda.solana.notary.kotlincodegen
+package net.corda.solana.notary.client.generator
 
 import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
 import com.fasterxml.jackson.databind.JsonNode
@@ -37,13 +37,13 @@ import net.corda.solana.notary.common.codegen.BorshUtils
 import net.corda.solana.notary.common.codegen.FixedBytesNewtypeStruct
 import net.corda.solana.notary.common.codegen.IdlCodeGenSupport
 import net.corda.solana.notary.common.codegen.U128
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.Account
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorType
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.AnchorTypeDef.Struct
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.Instruction
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.InstructionAccount
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.PDA
-import net.corda.solana.notary.kotlincodegen.AnchorIdl.Seed
+import net.corda.solana.notary.client.generator.AnchorIdl.Account
+import net.corda.solana.notary.client.generator.AnchorIdl.AnchorType
+import net.corda.solana.notary.client.generator.AnchorIdl.AnchorTypeDef.Struct
+import net.corda.solana.notary.client.generator.AnchorIdl.Instruction
+import net.corda.solana.notary.client.generator.AnchorIdl.InstructionAccount
+import net.corda.solana.notary.client.generator.AnchorIdl.PDA
+import net.corda.solana.notary.client.generator.AnchorIdl.Seed
 import java.nio.ByteBuffer
 import javax.annotation.processing.Generated
 import kotlin.io.path.Path
