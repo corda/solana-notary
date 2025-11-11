@@ -1,25 +1,20 @@
 # Notary Program
 
-This module has the [Rust notary program](programs/corda-notary) and an Anchor IDL [code generator](src/codegen) for Kotlin.
+The on-chain notary program acts is a single global database for all Corda networks which integrate with Solana.
+Each notary(s) from every separate Corda network is assigned its own separate namespace, so notarisation of state
+data cannot overlap across different networks. An admin authority is in charge of creating these namespaces and
+giving access to Corda notary nodes.
 
-## Generated Code
+The notary program has the following instructions:
 
-Add this module as an `implementation` dependency if you need to use the generated classes, which can be found under
-`build/generated/src/main/kotlin`.  The code generation occurs automatically as part of Kotlin compilation, but if you find the code is
-out of sync then run
+- `initialize`: Called immediately after the program is first deployed. The signer of this transaction is assigned to be
+  the admin of the program.
+- `create_network`: Creates a new Corda network namespace. All Corda notaries assigned to the same namespace can be
+  consumed the states of that namesapce. Only the admin can call this instruction.
+- `authorize`: Authorises access for a Corda notary address to the specific network. The same address cannot be part
+  of multiple networks. Only the admin can call this instruction.
+- `revoke`: Revokes access for a Corda notary.
+- `commit`: The notarisation instruction which spends the given input states. Only authorised notary address can
+  access this instruction.
 
-```shell
-./gradlew generateAnchorIdl
-```
-
-## Formatting
-
-CI checks the Rust code is [correctly formatted](../../rustfmt.toml) using [Rustfmt](https://rust-lang.github.io/rustfmt). You can apply the
-correct format by running
-
-```shell
-cargo fmt --all
-```
-
-You may want to [setup your IDE](https://github.com/rust-lang/rustfmt?tab=readme-ov-file#running-rustfmt-from-your-editor) to automatically
-run this, or a Git hook.
+The ability to change the admin authority has not yet been implemented.

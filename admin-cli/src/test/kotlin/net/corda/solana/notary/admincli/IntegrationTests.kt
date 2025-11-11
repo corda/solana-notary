@@ -84,6 +84,7 @@ class IntegrationTests {
         execCmd("create-network")
         execCmd("create-network")
 
+        // TODO there's no need for the -a flag
         execCmd("authorize", "-a", notary1.account.base58(), "-n", "0")
         commitRandomInputState(notary1, networkId = 0)
 

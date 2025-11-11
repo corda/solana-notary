@@ -2,37 +2,53 @@
 
 The Corda Solana [notary](https://docs.r3.com/en/platform/corda/4.12/community/key-concepts-notaries.html) is an
 on-chain Solana program that records consumed
-[`StateRef`](https://docs.r3.com/en/api-ref/corda/4.12/community/javadoc/net/corda/core/contracts/StateRef.html)s. 
+[`StateRef`](https://docs.r3.com/en/api-ref/corda/4.12/community/javadoc/net/corda/core/contracts/StateRef.html)s.
 An appropriately configured Corda notary node can delegate the tracking of spent states to this program.
 
 ## Overview
 
-There are two components in this repo:
+This repo is a multi-module Gradle project with the following modules. Each module which is published has a Maven
+group ID of `net.corda.solana.notary`. It uses the
+[axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the verion based on git
+tags.
 
-1. `notary-program`: The on-chain Solana program written using Anchor. This also the Kotlin client code generator 
-   for the program IDL.
-2. `admin-cli`: A CLI tool for managing access to the notary program. More information can be found
-   [here](admin-cli/README.md). This is written in Kotlin.
+### `solana-program`
 
-// TODO Add a note about Gradle
+The on-chain Solana program written using Anchor. It has its own [Gradle build file](solana-program/build.gradle.kts)
+which hooks the Cargo/Anchor build process into Gradle's. This means, for example, running `./gradlew test` will
+run the tests in all the modules, including the Rust-based tests in this one.
 
-## Notary Program
+This module also has a Maven publication in the form a Jar file containing the compiled program binary and Anchor IDL
+file. The version of the program and IDL is in-sync with the other modules.
 
-The on-chain notary program acts is a single global database for all Corda networks which integrate with Solana. 
-Each notary(s) from every separate Corda network is assigned its own separate namespace, so notarisation of state 
-data cannot overlap across different networks. An admin authority is in charge of creating these namespaces and 
-giving access to Corda notary nodes.
+### `kotlin-client`
 
-The notary program has the following instructions:
+Generated Kotlin client for the program using Solana4j. This module only contains the code generator.
 
-- `initialize`: Called immediately after the program is first deployed. The signer of this transaction is assigned to be
-  the admin of the program.
-- `create_network`: Creates a new Corda network namespace. All Corda notaries assigned to the same namespace can be
-  consumed the states of that namesapce. Only the admin can call this instruction.
-- `authorize`: Authorises access for a Corda notary address to the specific network. The same address cannot be part 
-  of multiple networks. Only the admin can call this instruction.
-- `revoke`: Revokes access for a Corda notary.
-- `commit`: The notarisation instruction which spends the given input states. Only authorised notary address can 
-  access this instruction.
+Add this module as an `implementation` dependency if you need to use the generated classes, which can be found under
+`build/generated/src/main/kotlin`.  The code generation occurs automatically as part of Kotlin compilation, but if you
+find the code is out of sync then run
 
-The ability to change the admin authority has not yet been implemented.
+```shell
+./gradlew generateKotlinClient
+```
+
+### `admin-cli`
+
+Admin CLI for managing the notary program.
+
+### `common`
+
+Kotlin utilties and helpers when using Solana4j.
+
+### `notary-test`
+
+Testing helper library for when writing JUnit tests which need the Solana notary.
+
+## Build
+
+To test and build the entire project, including the Solana program:
+
+```shell
+./gradlew clean build
+```
