@@ -2,6 +2,7 @@
 kotlin-main = "2.2.20"
 kotlin-corda = "1.9.25"
 solana4j = "1.2.2"
+sava = "25.1.2-j17-2"
 jackson = "2.17.2"
 kotlinpoet = "2.2.0"
 guava = "33.5.0-jre"
@@ -21,6 +22,8 @@ jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin"
 bouncycastle = { module = "org.bouncycastle:bcprov-lts8on", version.ref = "bouncycastle" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+sava-core = { module = "software.sava:sava-core", version.ref = "sava" }
+sava-rpc = { module = "software.sava:sava-rpc", version.ref = "sava" }
 solana4j-core = { module = "com.lmax:solana4j", version.ref = "solana4j" }
 solana4j-rpc = { module = "com.lmax:solana4j-json-rpc", version.ref = "solana4j" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
