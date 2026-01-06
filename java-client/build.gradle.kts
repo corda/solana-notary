@@ -1,4 +1,5 @@
-import java.io.OutputStream
+import groovy.json.JsonSlurper
+import kotlin.io.path.deleteExisting
 
 plugins {
     id("corda-java")
@@ -30,40 +31,42 @@ val downloadAnchorSrcGenTask = tasks.register<Exec>("downloadAnchorSrcGen") {
         delete(dir)
     }
     commandLine(
-        "git",
-        "clone",
+        "bash",
         "-c",
-        "advice.detachedHead=false",
-        "--depth=1",
-        "--branch=24.1.0",
-        "https://github.com/sava-software/anchor-src-gen.git",
-        dir.asFile
+        """
+        git clone https://github.com/sava-software/anchor-src-gen.git ${dir.asFile} && \
+        git -C ${dir.asFile} -c advice.detachedHead=false checkout 979d71a8c6ad4c08a6ba5fdca78742a7364a6174
+        """.trimIndent()
     )
-    errorOutput = OutputStream.nullOutputStream()
 }
 
 tasks.register<Exec>("runAnchorSrcGen") {
     outputs.dir(generatedJavaDir)
     val generateIdlTask = project(":solana-program").tasks.named("generateIdl")
     dependsOn(downloadAnchorSrcGenTask, generateIdlTask)
-    val java24Dir = javaToolchains
-        .launcherFor { languageVersion = JavaLanguageVersion.of(24) }
+    // anchor-src-gen doesn't work on Java 17 and so we use Gradle's toolchains feature to auto-download a Java 25 JVM
+    // and run it against that. If the generated code is not Java 17 compatible then that will be caught during
+    // compilation.
+    val java25Dir = javaToolchains
+        .launcherFor { languageVersion = JavaLanguageVersion.of(25) }
         .map { it.metadata.installationPath }
     val programConfigFile = temporaryDir.resolve("notary-program.json")
     doFirst {
         workingDir(downloadAnchorSrcGenTask.get().outputs.files.singleFile)
-        environment("JAVA_HOME", java24Dir.get())
+        environment("JAVA_HOME", java25Dir.get())
+        val idlFile = generateIdlTask.get().outputs.files.singleFile
+        val programId = (JsonSlurper().parse(idlFile) as Map<*, *>)["address"]!!
         programConfigFile.writeText(
             """
             [
               {
                 "name": "Corda Notary",
                 "package": "notary.client",
-                "program": "notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY",
-                "idlFile": "${generateIdlTask.get().outputs.files.singleFile}"
+                "program": "$programId",
+                "idlFile": "$idlFile"
               }
             ]
-    """.trimIndent()
+            """.trimIndent()
         )
     }
     commandLine(
@@ -73,6 +76,9 @@ tasks.register<Exec>("runAnchorSrcGen") {
         "--programs=$programConfigFile",
         "--sourceDirectory=${generatedJavaDir.get()}"
     )
+    doLast {
+        generatedJavaDir.get().file("net/corda/solana/notary/client/anchor/idl.json").asFile.toPath().deleteExisting()
+    }
 }
 
 tasks.compileJava {
