@@ -1,5 +1,7 @@
 use crate::states::{Administration, NotaryAuthorization};
 use crate::NotaryError;
+use crate::SEED_ADMIN;
+use crate::SEED_NOTARY_AUTHORIZATION;
 use anchor_lang::prelude::*;
 
 #[derive(Accounts)]
@@ -9,7 +11,7 @@ pub struct RevokeNotary<'info> {
     pub admin: Signer<'info>,
 
     #[account(
-        seeds = [b"admin"],
+        seeds = [SEED_ADMIN],
         bump = administration.bump,
         constraint = admin.key() == administration.admin @ NotaryError::Unauthorized
     )]
@@ -17,7 +19,7 @@ pub struct RevokeNotary<'info> {
 
     #[account(
         mut,
-        seeds = [b"notary_authorization", address_to_revoke.key().as_ref()],
+        seeds = [SEED_NOTARY_AUTHORIZATION, address_to_revoke.key().as_ref()],
         bump = authorization.bump,
         // Rent is returned to admin account
         close = admin

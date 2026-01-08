@@ -1,6 +1,7 @@
 pub use crate::instructions::*;
 use crate::states::*;
 use crate::ACCOUNT_SCHEMA_VERSION;
+use crate::SEED_CORDA_TX;
 use crate::{types::*, NotaryError};
 use anchor_lang::{
     prelude::*,
@@ -120,7 +121,7 @@ fn get_corda_tx_account<'a, 'b, 'c, 'info>(
 ) -> Result<(&'c AccountInfo<'info>, u8)> {
     let (expected_address, bump) = Pubkey::find_program_address(
         &[
-            b"corda_tx",
+            SEED_CORDA_TX,
             txhash.as_ref(),
             ctx.accounts.authorization.network_id.to_le_bytes().as_ref(),
         ],
@@ -165,7 +166,7 @@ fn create_corda_tx_account<'a, 'b, 'c, 'info>(
             ctx.accounts.system_program.to_account_info(),
         ],
         &[&[
-            b"corda_tx",
+            SEED_CORDA_TX,
             tx_id.as_ref(),
             ctx.accounts.authorization.network_id.to_le_bytes().as_ref(),
             &[bump],

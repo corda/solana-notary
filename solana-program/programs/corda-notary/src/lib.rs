@@ -12,11 +12,16 @@ pub use types::StateRefGroup;
 pub use types::TxId;
 
 mod commit;
+
 use commit::do_commit;
 
 declare_id!("notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY");
 
 pub const ACCOUNT_SCHEMA_VERSION: u8 = 1;
+pub const SEED_ADMIN: &[u8] = b"admin";
+pub const SEED_NETWORK_ACCOUNT: &[u8] = b"network_account";
+pub const SEED_NOTARY_AUTHORIZATION: &[u8] = b"notary_authorization";
+pub const SEED_CORDA_TX: &[u8] = b"corda_tx";
 
 #[program]
 pub mod corda_notary {

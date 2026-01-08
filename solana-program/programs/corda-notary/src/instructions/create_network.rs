@@ -1,3 +1,5 @@
+use crate::SEED_ADMIN;
+use crate::SEED_NETWORK_ACCOUNT;
 use crate::{Administration, Network, NotaryError};
 use anchor_lang::prelude::*;
 
@@ -7,7 +9,7 @@ pub struct CreateNetwork<'info> {
     pub admin: Signer<'info>,
 
     #[account(mut,
-        seeds = [b"admin"],
+        seeds = [SEED_ADMIN],
         bump = administration.bump,
         constraint = admin.key() == administration.admin @ NotaryError::Unauthorized,
     )]
@@ -17,7 +19,7 @@ pub struct CreateNetwork<'info> {
         init,
         payer = admin,
         space = Network::DISCRIMINATOR.len() + Network::INIT_SPACE,
-        seeds = [b"network_account", administration.next_network_id.to_le_bytes().as_ref()],
+        seeds = [SEED_NETWORK_ACCOUNT, administration.next_network_id.to_le_bytes().as_ref()],
         bump
     )]
     pub network: Account<'info, Network>,

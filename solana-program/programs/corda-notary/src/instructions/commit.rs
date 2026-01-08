@@ -1,3 +1,4 @@
+use crate::SEED_NOTARY_AUTHORIZATION;
 use crate::{NotaryAuthorization, NotaryError};
 use anchor_lang::prelude::*;
 
@@ -7,7 +8,7 @@ pub struct Commit<'info> {
     pub notary: Signer<'info>,
 
     #[account(
-        seeds = [b"notary_authorization", notary.key().as_ref()],
+        seeds = [SEED_NOTARY_AUTHORIZATION, notary.key().as_ref()],
         bump = authorization.bump,
         constraint = notary.key() == authorization.notary @ NotaryError::Unauthorized
     )]
