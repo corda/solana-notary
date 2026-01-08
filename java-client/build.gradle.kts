@@ -1,5 +1,5 @@
+import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
-import kotlin.io.path.deleteExisting
 
 plugins {
     id("corda-java")
@@ -55,29 +55,30 @@ tasks.register<Exec>("runAnchorSrcGen") {
         workingDir(downloadAnchorSrcGenTask.get().outputs.files.singleFile)
         environment("JAVA_HOME", java25Dir.get())
         val idlFile = generateIdlTask.get().outputs.files.singleFile
-        val programId = (JsonSlurper().parse(idlFile) as Map<*, *>)["address"]!!
-        programConfigFile.writeText(
-            """
-            [
-              {
-                "name": "Corda Notary",
-                "package": "notary.client",
-                "program": "$programId",
-                "idlFile": "$idlFile"
-              }
-            ]
-            """.trimIndent()
-        )
+        val idl = JsonSlurper().parse(idlFile) as Map<*, *>
+        programConfigFile.writeText(JsonOutput.toJson(
+            listOf(
+                mapOf(
+                    "name" to "Corda Notary",
+                    "package" to "notary.client",
+                    "program" to idl["address"]!!,
+                    "idlFile" to idlFile.absolutePath,
+                )
+            )
+        ))
     }
     commandLine(
         "sh",
         "genSrc.sh",
         "--basePackageName=net.corda.solana",
         "--programs=$programConfigFile",
-        "--sourceDirectory=${generatedJavaDir.get()}"
+        "--sourceDirectory=${generatedJavaDir.get()}",
+        "--tabLength=4"
     )
     doLast {
-        generatedJavaDir.get().file("net/corda/solana/notary/client/anchor/idl.json").asFile.toPath().deleteExisting()
+        check(delete(generatedJavaDir.get().file("net/corda/solana/notary/client/anchor/idl.json")))
+        // We have CordaNotaryAccounts which is better
+        check(delete(generatedJavaDir.get().file("net/corda/solana/notary/client/anchor/CordaNotaryPDAs.java")))
     }
 }
 
