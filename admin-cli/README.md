@@ -98,31 +98,31 @@ Sets up the initial notary configuration and deploys necessary smart contracts t
 
 ```bash
 # Initializes the Corda Notary program on the Solana blockchain
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar initialize -u http://localhost:8899 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar initialize --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
 ```
 
 ```bash
 # Creates a new network with the specified ID so the notaries can be authorized to
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar create-network -u http://localhost:8899 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar create-network --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
 ```
 
 
 ```bash
 # Authorizes the given notary account (specified by the --address option) on the given network ID (specified by the --network option)
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 -u http://localhost:8899 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
 ```
 
 ```bash
 # Lists all the notaries in the network
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar list-notaries -u http://localhost:8899 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar list-notaries --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
 ```
 
 ```bash
 # Revokes the notary account authorization
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 -u http://localhost:8899 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
 ```
 
-#### Help   
+#### Help
 Displays help information for the CLI commands.
 
 ```bash

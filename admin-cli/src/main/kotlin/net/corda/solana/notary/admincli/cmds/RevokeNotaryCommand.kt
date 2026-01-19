@@ -1,15 +1,13 @@
 package net.corda.solana.notary.admincli.cmds
 
-import com.lmax.solana4j.Solana
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
-import net.corda.solana.notary.admincli.SolanaConfig
-import net.corda.solana.notary.client.CordaNotary
-import net.corda.solana.notary.common.rpc.SolanaTransactionException
-import net.corda.solana.notary.common.rpc.sendAndConfirm
+import net.corda.solana.notary.client.instructions.RevokeNotary
+import net.corda.solana.notary.common.SolanaTransactionException
 import picocli.CommandLine
 import picocli.CommandLine.Option
+import software.sava.core.accounts.PublicKey
 
 /**
  * Command to revoke a notary account.
@@ -25,17 +23,26 @@ class RevokeNotaryCommand :
         required = true
     )
     private lateinit var notaryAddress: String
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
 
     override fun runProgram(): Int {
+        val solanaConfig = shared.toSolanaConfig()
+
         solanaConfig.validateNotaryAddress(notaryAddress)
 
         println("Revoking notary $notaryAddress...")
 
-        val notaryAccount = Solana.account(notaryAddress)
-        val instruction = CordaNotary.RevokeNotary(notaryAccount, solanaConfig.wallet)
         return try {
-            solanaConfig.rpcClient.sendAndConfirm(instruction)
+            solanaConfig.client.sendAndConfirm(
+                {
+                    it.createTransaction(
+                        RevokeNotary.instruction(
+                            PublicKey.fromBase58Encoded(notaryAddress),
+                            solanaConfig.wallet.publicKey()
+                        )
+                    )
+                },
+                solanaConfig.wallet
+            )
             println("✓ Notary revoked successfully: $notaryAddress")
             ExitCodes.SUCCESS
         } catch (e: SolanaTransactionException) {

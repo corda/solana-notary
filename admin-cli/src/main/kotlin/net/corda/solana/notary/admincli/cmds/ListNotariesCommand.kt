@@ -3,48 +3,43 @@ package net.corda.solana.notary.admincli.cmds
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
-import net.corda.solana.notary.admincli.SolanaConfig
-import net.corda.solana.notary.client.CordaNotary
-import net.corda.solana.notary.common.rpc.getProgramAnchorAccounts
+import net.corda.solana.notary.client.CordaNotary.PROGRAM_ID
+import net.corda.solana.notary.client.accounts.Network
+import net.corda.solana.notary.client.accounts.NotaryAuthorization
 import picocli.CommandLine
-import java.net.http.HttpClient
+import software.sava.rpc.json.http.client.SolanaRpcClient
 
 /**
  * Command to list all notaries registered on the Solana notary program.
  */
-class ListNotariesCommand :
-    CliWrapperBase("list-notaries", "Returns the list of notaries registered on the Solana notary program") {
+class ListNotariesCommand : CliWrapperBase(
+    "list-notaries",
+    "Returns the list of notaries registered on the Solana notary program"
+) {
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
-
     override fun runProgram(): Int {
-        val parsedNotaries = getProgramAnchorAccounts(
-            CordaNotary.PROGRAM_ID,
-            solanaConfig.rpcUrl,
-            HttpClient.newHttpClient(),
-            CordaNotary.Accounts.NotaryAuthorization.DISCRIMINATOR,
-            CordaNotary.Accounts.NotaryAuthorization::borshRead
-        )
+        val solanaConfig = shared.toSolanaConfig()
 
-        val notariesByNetworkId = parsedNotaries.groupBy { it.networkId }
+        val networkIds = solanaConfig
+            .client
+            .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(Network.DISCRIMINATOR_FILTER))
+            .map { Network.read(it.data).networkId }
 
-        val parsedNetworks = getProgramAnchorAccounts(
-            CordaNotary.PROGRAM_ID,
-            solanaConfig.rpcUrl,
-            HttpClient.newHttpClient(),
-            CordaNotary.Accounts.Network.DISCRIMINATOR,
-            CordaNotary.Accounts.Network::borshRead
-        ).sortedBy { it.networkId }
+        val notariesByNetworkId = solanaConfig
+            .client
+            .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(NotaryAuthorization.DISCRIMINATOR_FILTER))
+            .map { NotaryAuthorization.read(it.data) }
+            .groupBy { it.networkId }
 
         // Get all networks
-        parsedNetworks.forEach { network ->
-            println("Network ID: ${network.networkId}")
-            if (notariesByNetworkId.containsKey(network.networkId)) {
-                val notaries = notariesByNetworkId[network.networkId]!!
+        for (networkId in networkIds) {
+            println("Network ID: $networkId")
+            val notaries = notariesByNetworkId[networkId]
+            if (notaries != null) {
                 notaries.forEachIndexed { index, pda ->
-                    println("  ${index + 1}. Notary: ${pda.notary.base58()}")
+                    println("  ${index + 1}. Notary: ${pda.notary}")
                 }
             } else {
                 println("  No notaries registered")

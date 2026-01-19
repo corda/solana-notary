@@ -7,7 +7,7 @@ class ManifestVersionProvider : CommandLine.IVersionProvider {
     override fun getVersion(): Array<String> {
         return arrayOf(
             "solana-notary-admin ${javaClass.getPackage().implementationVersion} " +
-                "(program: ${CordaNotary.PROGRAM_ID.base58()})"
+                "(program: ${CordaNotary.PROGRAM_ID})"
         )
     }
 }

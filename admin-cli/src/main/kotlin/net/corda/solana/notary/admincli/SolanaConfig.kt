@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.lmax.solana4j.client.api.Commitment
-import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClient
-import net.corda.solana.notary.common.Signer
+import net.corda.solana.notary.common.FileSigner
+import net.corda.solana.notary.common.SolanaClient
+import software.sava.rpc.json.http.request.Commitment
 import java.io.IOException
-import java.net.http.HttpClient
+import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
 import kotlin.io.path.exists
@@ -46,12 +46,10 @@ fun String.toSolanaCommitment(): Commitment {
  * Configuration class for Solana blockchain operations.
  * Handles loading configuration from standard Solana CLI paths and initializing required components.
  */
-class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment: Commitment?) {
+class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, websocketUrl: String?, commitment: Commitment?) {
     val config: SolanaConfigYml?
-    val wallet: Signer
-    val rpcUrl: String
-    val rpcClient: SolanaJsonRpcClient
-    val commitment: Commitment
+    val wallet: FileSigner
+    val client: SolanaClient
 
     companion object {
         private val YAML_MAPPER = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
@@ -66,13 +64,17 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment
     init {
         wallet = loadWalletFromFile()
         config = loadConfigFromFile()
-        this.rpcUrl = requireNotNull(rpcUrl ?: config?.jsonRpcUrl) {
+        val rpcUrl = requireNotNull(rpcUrl ?: config?.jsonRpcUrl) {
             "Solana config file doesn't exist to determine RPC URL, and nor was it provided as a flag"
         }
-        rpcClient = createRpcClient(this.rpcUrl)
-        this.commitment = requireNotNull(commitment ?: config?.commitment?.toSolanaCommitment()) {
+        val websocketUrl = requireNotNull(websocketUrl ?: config?.websocketUrl) {
+            "Solana config file doesn't exist to determine websocket URL, and nor was it provided as a flag"
+        }
+        val commitment = requireNotNull(commitment ?: config?.commitment?.toSolanaCommitment()) {
             "Solana config file doesn't exist to determine commitment level, and nor was it provided as a flag"
         }
+        client = SolanaClient(URI.create(rpcUrl), URI.create(websocketUrl), commitment)
+        client.start()
     }
 
     fun validateNotaryAddress(notaryAddress: String) {
@@ -97,26 +99,15 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment
     /**
      * Loads the wallet private key from the standard Solana CLI wallet file.
      */
-    private fun loadWalletFromFile(): Signer {
+    private fun loadWalletFromFile(): FileSigner {
         val walletPath = keypairPath?.let { Paths.get(it) } ?: getDefaultWalletPath()
         if (!walletPath.exists()) {
             throw SolanaConfigurationException("Solana wallet file not found at: $walletPath")
         }
         return try {
-            Signer.fromFile(walletPath)
+            FileSigner.read(walletPath)
         } catch (e: IOException) {
             throw SolanaConfigurationException("Failed to read wallet file at: $walletPath", e)
-        }
-    }
-
-    /**
-     * Creates and configures the Solana JSON-RPC client.
-     */
-    private fun createRpcClient(jsonRpcUrl: String): SolanaJsonRpcClient {
-        return try {
-            SolanaJsonRpcClient(HttpClient.newHttpClient(), jsonRpcUrl)
-        } catch (e: Exception) {
-            throw SolanaConfigurationException("Failed to create RPC client for URL: $jsonRpcUrl", e)
         }
     }
 }
@@ -124,5 +115,4 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, commitment
 /**
  * Custom exception for Solana configuration related errors.
  */
-class SolanaConfigurationException(message: String, cause: Throwable? = null) :
-    RuntimeException(message, cause)
+class SolanaConfigurationException(message: String, cause: Throwable? = null) : RuntimeException(message, cause)

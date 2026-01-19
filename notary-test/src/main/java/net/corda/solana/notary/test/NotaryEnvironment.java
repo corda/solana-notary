@@ -1,67 +1,96 @@
 package net.corda.solana.notary.test;
 
-import com.lmax.solana4j.api.PublicKey;
-import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClient;
-import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClientException;
-import net.corda.solana.notary.client.CordaNotary;
-import net.corda.solana.notary.common.AnchorInstruction;
-import net.corda.solana.notary.common.Signer;
-import net.corda.solana.notary.common.rpc.DefaultRpcParams;
-import net.corda.solana.notary.common.rpc.SolanaApiExt;
+import net.corda.solana.notary.client.instructions.AuthorizeNotary;
+import net.corda.solana.notary.client.instructions.CreateNetwork;
+import net.corda.solana.notary.client.instructions.Initialize;
+import net.corda.solana.notary.common.SolanaClient;
+import net.corda.solana.notary.common.SolanaTransactionException;
+import net.corda.solana.notary.common.SolanaTransactionExpiredException;
+import software.sava.core.accounts.PublicKey;
+import software.sava.core.accounts.Signer;
 
-import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutionException;
 
-import static net.corda.solana.notary.common.rpc.SolanaApiExt.checkResponse;
+import static net.corda.solana.notary.common.SolanaUtils.randomSigner;
 
 public class NotaryEnvironment {
-    private static final DefaultRpcParams RPC_PARAMS = new DefaultRpcParams();
     private static final long LAMPORTS_PER_SOL = 1_000_000_000;
 
-    private final SolanaJsonRpcClient rpcClient;
+    private final SolanaClient client;
     private final Signer admin;
     private short nextNetworkId;
 
-    public NotaryEnvironment(SolanaJsonRpcClient rpcClient) {
-        this.rpcClient = Objects.requireNonNull(rpcClient);
-        admin = Signer.random();
+    public NotaryEnvironment(SolanaClient client) {
+        this.client = Objects.requireNonNull(client);
+        admin = randomSigner();
     }
 
-    public SolanaJsonRpcClient getRpcClient() {
-        return rpcClient;
+    public SolanaClient client() {
+        return client;
     }
 
-    public Signer getAdmin() {
+    public Signer admin() {
         return admin;
     }
 
-    public short getNextNetworkId() {
+    public short nextNetworkId() {
         return nextNetworkId;
     }
 
-    public void initialiseProgram() throws SolanaJsonRpcClientException {
-        fundAdmin();
-        sendAndConfirm(new CordaNotary.Initialize(admin, admin));
-    }
-
-    public void fundAdmin() throws SolanaJsonRpcClientException {
-        checkResponse(
-            rpcClient.requestAirdrop(admin.getAccount().base58(), 100 * LAMPORTS_PER_SOL, RPC_PARAMS),
-            "requestAirdrop"
+    public void initializeProgram() throws SolanaTransactionException, SolanaTransactionExpiredException {
+        var signature = client.call("requestAirdrop", String.class, admin.publicKey(), 100 * LAMPORTS_PER_SOL);
+        try {
+            client.asyncConfirm(signature).get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            var cause = e.getCause();
+            if (cause instanceof SolanaTransactionException ste) {
+                throw ste;
+            } else if (cause instanceof SolanaTransactionExpiredException stee) {
+                throw stee;
+            } else if (cause instanceof RuntimeException re) {
+                throw re;
+            } else {
+                throw new RuntimeException(e);
+            }
+        }
+        client.sendAndConfirm(
+            (builder) -> builder.createTransaction(Initialize.instruction(admin.publicKey())),
+            admin
         );
     }
 
-    public short createNewCordaNetwork() {
+    public short createNewCordaNetwork() throws SolanaTransactionException, SolanaTransactionExpiredException {
         var networkId = nextNetworkId++;
-        sendAndConfirm(new CordaNotary.CreateNetwork(admin, networkId, admin));
+        client.sendAndConfirm(
+            (builder) -> builder.createTransaction(CreateNetwork.instruction(admin.publicKey(), networkId)),
+            admin
+        );
         return networkId;
     }
 
-    public void addCordaNotary(short networkId, PublicKey cordaNotary) {
-        sendAndConfirm(new CordaNotary.AuthorizeNotary(cordaNotary, admin, networkId, admin));
+    /**
+     * Authorise the given notary key onto an existing network.
+     */
+    public void addCordaNotary(short networkId, PublicKey cordaNotary)
+        throws SolanaTransactionException, SolanaTransactionExpiredException
+    {
+        client.sendAndConfirm(
+            (builder) -> builder.createTransaction(AuthorizeNotary.instruction(cordaNotary, admin.publicKey(), networkId)),
+            admin
+        );
     }
 
-    private void sendAndConfirm(AnchorInstruction instruction) {
-        SolanaApiExt.sendAndConfirm(rpcClient, instruction, List.of(), RPC_PARAMS);
+    /**
+     * Authorise the given notary key onto a new network.
+     */
+    public short addCordaNotary(PublicKey cordaNotary)
+        throws SolanaTransactionException, SolanaTransactionExpiredException
+    {
+        var networkId = createNewCordaNetwork();
+        addCordaNotary(networkId, cordaNotary);
+        return networkId;
     }
 }

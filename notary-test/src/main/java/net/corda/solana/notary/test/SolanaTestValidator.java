@@ -1,18 +1,22 @@
 package net.corda.solana.notary.test;
 
-import com.lmax.solana4j.api.PublicKey;
-import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClient;
+import net.corda.solana.notary.common.SolanaClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import software.sava.core.accounts.PublicKey;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.URI;
-import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class SolanaTestValidator implements AutoCloseable {
+    private static final Logger logger = LoggerFactory.getLogger(SolanaTestValidator.class);
+    private static final Pattern finalizedSlotPattern = Pattern.compile("Finalized Slot: (\\d+)");
+
     private final Process process;
     private final int rpcPort;
 
@@ -21,26 +25,39 @@ public class SolanaTestValidator implements AutoCloseable {
         this.rpcPort = rpcPort;
     }
 
-    public URI getRpcEndpoint() {
+    public URI rpcEndpoint() {
         return URI.create("http://127.0.0.1:" + rpcPort);
     }
 
-    public URI getWsEndpoint() {
+    public URI wsEndpoint() {
         return URI.create("ws://127.0.0.1:" + (rpcPort + 1));
     }
 
-    public SolanaTestValidator waitForReadiness() throws InterruptedException {
-        while (true) {
-            try (var ignored = new Socket("127.0.0.1", rpcPort)) {
-                return this;
-            } catch (IOException e) {
-                Thread.sleep(100);
+    public SolanaTestValidator waitForReadiness() {
+        var processOutput = process.inputReader();
+        try {
+            while (true) {
+                var line = processOutput.readLine();
+                if (line == null) {
+                    throw new IllegalStateException("solana-test-validator didn't start or has terminated");
+                }
+                logger.debug("solana-test-validator: {}", line);
+                // Wait until the validator has finalized at least one slot otherwise it will drop transactions
+                var matcher = finalizedSlotPattern.matcher(line);
+                if (matcher.find() && Integer.parseInt(matcher.group(1)) > 0) {
+                    break;
+                }
             }
+        } catch (IOException e) {
+            throw new IllegalStateException("solana-test-validator didn't start or has terminated", e);
         }
+        return this;
     }
 
-    public SolanaJsonRpcClient connectRpcClient() {
-        return new SolanaJsonRpcClient(HttpClient.newHttpClient(), getRpcEndpoint().toString());
+    public SolanaClient connectClient() {
+        var client = new SolanaClient(rpcEndpoint(), wsEndpoint());
+        client.start();
+        return client;
     }
 
     @Override
@@ -69,7 +86,6 @@ public class SolanaTestValidator implements AutoCloseable {
 
     public static class Builder {
         private boolean reset;
-        private boolean quiet;
         private Integer rpcPort;
         private Integer gossipPort;
         private Integer faucetPort;
@@ -81,11 +97,6 @@ public class SolanaTestValidator implements AutoCloseable {
 
         public Builder reset() {
             reset = true;
-            return this;
-        }
-
-        public Builder quiet() {
-            quiet = true;
             return this;
         }
 
@@ -124,10 +135,11 @@ public class SolanaTestValidator implements AutoCloseable {
             var gossipPort = this.gossipPort;
             var faucetPort = this.faucetPort;
             if (dynamicPorts) {
-                var takenPorts = new HashSet<Integer>();
-                rpcPort = availablePort(takenPorts);
-                gossipPort = availablePort(takenPorts);
-                faucetPort = availablePort(takenPorts);
+                var portsTaken = new HashSet<Integer>();
+                rpcPort = availablePort(portsTaken);
+                portsTaken.add(rpcPort + 1);
+                gossipPort = availablePort(portsTaken);
+                faucetPort = availablePort(portsTaken);
             }
 
             final var command = new ArrayList<String>();
@@ -138,19 +150,21 @@ public class SolanaTestValidator implements AutoCloseable {
             if (reset) {
                 command.add("--reset");
             }
-            if (quiet) {
-                command.add("--quiet");
-            }
             if (ledger != null) {
                 command.add("--ledger");
-                command.add(ledger.toAbsolutePath().toString());
+                command.add(ledger.getFileName().toString());
             }
             bpfPrograms.forEach((programId, file) -> {
                 command.add("--bpf-program");
-                command.add(programId.base58());
+                command.add(programId.toBase58());
                 command.add(file.toAbsolutePath().toString());
             });
-            var process = new ProcessBuilder(command).inheritIO().start();
+            var processBuilder = new ProcessBuilder(command);
+            if (ledger != null) {
+                processBuilder.directory(ledger.getParent().toFile());
+            }
+            var process = processBuilder.start();
+            Runtime.getRuntime().addShutdownHook(new Thread(process::destroyForcibly));
             return new SolanaTestValidator(process, rpcPort != null ? rpcPort : 8899);
         }
 

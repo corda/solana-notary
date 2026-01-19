@@ -3,10 +3,8 @@ package net.corda.solana.notary.admincli.cmds
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
-import net.corda.solana.notary.admincli.SolanaConfig
-import net.corda.solana.notary.client.CordaNotary
-import net.corda.solana.notary.common.rpc.SolanaTransactionException
-import net.corda.solana.notary.common.rpc.sendAndConfirm
+import net.corda.solana.notary.client.instructions.CreateNetwork
+import net.corda.solana.notary.common.SolanaTransactionException
 import picocli.CommandLine
 
 /**
@@ -17,14 +15,16 @@ class CreateNetworkCommand :
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
-
     override fun runProgram(): Int {
+        val solanaConfig = shared.toSolanaConfig()
+
         println("Creating network ...")
         return try {
             val networkId = ShowNextAvailableNetworkIdCommand.getNextNetworkId(solanaConfig)
-            val instruction = CordaNotary.CreateNetwork(solanaConfig.wallet, networkId)
-            solanaConfig.rpcClient.sendAndConfirm(instruction)
+            solanaConfig.client.sendAndConfirm(
+                { it.createTransaction(CreateNetwork.instruction(solanaConfig.wallet.publicKey(), networkId)) },
+                solanaConfig.wallet
+            )
             println("✓ Corda network creation successful - network ID: $networkId")
             ExitCodes.SUCCESS
         } catch (e: SolanaTransactionException) {

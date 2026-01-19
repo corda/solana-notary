@@ -1,16 +1,14 @@
 package net.corda.solana.notary.admincli
 
-import com.lmax.solana4j.Solana
-import com.lmax.solana4j.client.jsonrpc.SolanaJsonRpcClient
 import net.corda.solana.notary.client.CordaNotary
-import net.corda.solana.notary.client.CordaNotary.Types.FlaggedU8
-import net.corda.solana.notary.client.CordaNotary.Types.StateRefGroup
-import net.corda.solana.notary.client.CordaNotary.Types.TxId
-import net.corda.solana.notary.common.AccountMeta
-import net.corda.solana.notary.common.Signer
-import net.corda.solana.notary.common.rpc.SolanaTransactionException
-import net.corda.solana.notary.common.rpc.checkResponse
-import net.corda.solana.notary.common.rpc.sendAndConfirm
+import net.corda.solana.notary.client.instructions.Commit
+import net.corda.solana.notary.client.types.FlaggedU8
+import net.corda.solana.notary.client.types.StateRefGroup
+import net.corda.solana.notary.client.types.TxId
+import net.corda.solana.notary.common.FileSigner
+import net.corda.solana.notary.common.SolanaClient
+import net.corda.solana.notary.common.SolanaTransactionException
+import net.corda.solana.notary.common.SolanaUtils.randomSigner
 import net.corda.solana.notary.test.SolanaTestValidator
 import net.corda.solana.notary.test.TestingSupport
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
@@ -20,10 +18,14 @@ import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import software.sava.core.accounts.PublicKey
+import software.sava.core.accounts.Signer
+import software.sava.core.accounts.meta.AccountMeta
+import software.sava.core.encoding.ByteUtil
+import software.sava.rpc.json.http.client.SolanaRpcClient
 import java.nio.file.Path
 import kotlin.experimental.or
+import kotlin.io.path.absolutePathString
 import kotlin.random.Random
 
 class IntegrationTests {
@@ -31,24 +33,22 @@ class IntegrationTests {
         private const val REFERENCE_MASK = 0b1000_0000.toByte()
 
         private lateinit var testValidator: SolanaTestValidator
-        private lateinit var rpcClient: SolanaJsonRpcClient
+        private lateinit var client: SolanaClient
 
-        private lateinit var admin: Signer
-        private lateinit var adminFile: Path
+        private lateinit var admin: FileSigner
 
         @BeforeAll
         @JvmStatic
         fun startTestValidator(@TempDir ledger: Path) {
             val builder = SolanaTestValidator
                 .builder()
-                .quiet()
                 .ledger(ledger)
                 .dynamicPorts()
             TestingSupport.addNotaryProgram(builder)
             testValidator = builder.start().waitForReadiness()
-            rpcClient = testValidator.connectRpcClient()
-            admin = fundNewAccount()
-            adminFile = TestingSupport.writeToDir(admin, ledger)
+            client = testValidator.connectClient()
+            admin = FileSigner.random(ledger)
+            fundAccount(admin)
         }
 
         @AfterAll
@@ -59,9 +59,9 @@ class IntegrationTests {
             }
         }
 
-        private fun fundNewAccount(): Signer {
-            val signer = Signer.random()
-            rpcClient.requestAirdrop(signer.account.base58(), 1_000_000_000).checkResponse("requestAirdrop")
+        private fun fundAccount(signer: Signer = randomSigner()): Signer {
+            val signature = client.call(SolanaRpcClient::requestAirdrop, signer.publicKey(), 1_000_000_000)
+            client.asyncConfirm(signature).get()
             return signer
         }
     }
@@ -69,14 +69,14 @@ class IntegrationTests {
     @Test
     fun version() {
         val output = exec("--version")
-        assertThat(output).contains(CordaNotary.PROGRAM_ID.base58())
+        assertThat(output).contains(CordaNotary.PROGRAM_ID.toBase58())
         assertThat(output).contains(System.getProperty("gradle.test.version"))
     }
 
     @Test
     fun `e2e initilisation, adding and removing notaries`() {
-        val notary1 = fundNewAccount()
-        val notary2 = fundNewAccount()
+        val notary1 = fundAccount()
+        val notary2 = fundAccount()
 
         execCmd("initialize")
 
@@ -85,7 +85,7 @@ class IntegrationTests {
         execCmd("create-network")
 
         // TODO there's no need for the -a flag
-        execCmd("authorize", "-a", notary1.account.base58(), "-n", "0")
+        execCmd("authorize", "-a", notary1.publicKey(), "-n", "0")
         commitRandomInputState(notary1, networkId = 0)
 
         // Try to commit from an unauthorised notary on a valid network
@@ -93,10 +93,10 @@ class IntegrationTests {
             .isInstanceOf(SolanaTransactionException::class.java)
             .hasMessageContaining("Error Code: AccountNotInitialized")
 
-        execCmd("authorize", "-a", notary2.account.base58(), "-n", "1")
+        execCmd("authorize", "-a", notary2.publicKey(), "-n", "1")
         commitRandomInputState(notary2, networkId = 1)
 
-        execCmd("revoke", "-a", notary2.account.base58())
+        execCmd("revoke", "-a", notary2.publicKey())
         assertThatThrownBy { commitRandomInputState(notary2, networkId = 1) }
             .isInstanceOf(SolanaTransactionException::class.java)
             .hasMessageContaining("Error Code: AccountNotInitialized")
@@ -126,9 +126,11 @@ class IntegrationTests {
         args.addAll(
             listOf(
                 "-k",
-                adminFile.toString(),
-                "-u",
-                testValidator.rpcEndpoint.toString(),
+                admin.file.absolutePathString(),
+                "--rpc",
+                testValidator.rpcEndpoint().toString(),
+                "--websocket",
+                testValidator.wsEndpoint().toString(),
                 "-c",
                 "CONFIRMED",
                 "-v"
@@ -141,31 +143,32 @@ class IntegrationTests {
     private fun commitRandomInputState(notary: Signer, networkId: Short) {
         val consumingTxId = TxId(Random.nextBytes(32))
         val inputStateTxId = TxId(Random.nextBytes(32))
-        rpcClient.sendAndConfirm(
-            CordaNotary.Commit(
-                consumingTxId,
-                listOf(StateRefGroup(inputStateTxId, listOf(1.toFlaggedU8(false)))),
-                notary,
-                txFeePayer = notary
-            ),
-            remainingAccounts = listOf(
-                cordaTxPda(consumingTxId, networkId),
-                cordaTxPda(inputStateTxId, networkId)
-            )
+        client.sendAndConfirm(
+            {
+                it.createTransaction(
+                    Commit.instruction(
+                        consumingTxId,
+                        listOf(StateRefGroup(inputStateTxId, listOf(1.toFlaggedU8(false)))),
+                        notary.publicKey()
+                    ).extraAccounts(
+                        listOf(
+                            cordaTxPda(consumingTxId, networkId),
+                            cordaTxPda(inputStateTxId, networkId)
+                        )
+                    )
+                )
+            },
+            notary
         )
     }
 
     private fun cordaTxPda(txId: TxId, networkId: Short): AccountMeta {
-        val networkIdBytes = ByteBuffer
-            .allocate(Short.SIZE_BYTES)
-            .order(ByteOrder.LITTLE_ENDIAN)
-            .putShort(networkId)
-            .array()
-        val derivedAddress = Solana.programDerivedAddress(
+        val networkIdBytes = ByteArray(Short.SIZE_BYTES).also { ByteUtil.putInt16LE(it, 0, networkId) }
+        val derivedAddress = PublicKey.findProgramAddress(
             listOf("corda_tx".toByteArray(), txId.bytes, networkIdBytes),
             CordaNotary.PROGRAM_ID
         )
-        return AccountMeta(derivedAddress.address(), isSigner = false, isWritable = true)
+        return AccountMeta.createMeta(derivedAddress.publicKey(), true, false)
     }
 
     private fun Int.toFlaggedU8(isReference: Boolean): FlaggedU8 {

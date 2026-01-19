@@ -18,7 +18,7 @@ import picocli.CommandLine.Command
 @Command(versionProvider = ManifestVersionProvider::class)
 class SolanaNotaryAdminCli : CordaCliWrapper(
     "solana-notary-admin",
-    "CLI tool for admin operations on the Solana notary program (${CordaNotary.PROGRAM_ID.base58()})"
+    "CLI tool for admin operations on the Solana notary program (${CordaNotary.PROGRAM_ID})"
 ) {
     override fun additionalSubCommands() = setOf(
         InitializeCommand(),

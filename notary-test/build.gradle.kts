@@ -12,8 +12,9 @@ java {
 dependencies {
     implementation(project(":common"))
     implementation(project(":kotlin-client"))
-    implementation(libs.solana4j.core)
-    implementation(libs.solana4j.rpc)
+    implementation(libs.sava.core)
+    implementation(libs.sava.rpc)
+    implementation(libs.slf4j.api)
 
     runtimeOnly(project(":solana-program"))
 }

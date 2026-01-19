@@ -23,23 +23,14 @@ file. The version of the program and IDL is in-sync with the other modules.
 
 ### `kotlin-client`
 
-Generated Kotlin client for the program using Solana4j. This module only contains the code generator.
+Generated Kotlin client for the program using a forked version of [Sava](https://github.com/corda/sava).
 
-Add this module as an `implementation` dependency if you need to use the generated classes, which can be found under
-`build/generated/src/main/kotlin`.  The code generation occurs automatically as part of Kotlin compilation, but if you
-find the code is out of sync then run
-
-```shell
-./gradlew generateKotlinClient
-```
+In terms of source code, this module only contains an Anchor IDL code generator. It is invoked before the Kotlin
+compilation phase, generating the client source code.
 
 ### `admin-cli`
 
 Admin CLI for managing the notary program.
-
-### `common`
-
-Kotlin utilties and helpers when using Solana4j.
 
 ### `notary-test`
 

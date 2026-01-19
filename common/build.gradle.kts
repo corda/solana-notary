@@ -10,8 +10,10 @@ java {
 }
 
 dependencies {
-    implementation(libs.solana4j.core)
-    implementation(libs.solana4j.rpc)
-    implementation(libs.bouncycastle)
-    implementation(libs.jackson.kotlin)
+    api(libs.sava.programs)
+
+    implementation(libs.sava.core)
+    implementation(libs.sava.rpc)
+    implementation(libs.bucket4j)
+    implementation(libs.slf4j.api)
 }

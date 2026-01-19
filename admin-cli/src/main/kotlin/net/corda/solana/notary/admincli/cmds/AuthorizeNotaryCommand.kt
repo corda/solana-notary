@@ -1,15 +1,13 @@
 package net.corda.solana.notary.admincli.cmds
 
-import com.lmax.solana4j.Solana
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
-import net.corda.solana.notary.admincli.SolanaConfig
-import net.corda.solana.notary.client.CordaNotary
-import net.corda.solana.notary.common.rpc.SolanaTransactionException
-import net.corda.solana.notary.common.rpc.sendAndConfirm
+import net.corda.solana.notary.client.instructions.AuthorizeNotary
+import net.corda.solana.notary.common.SolanaTransactionException
 import picocli.CommandLine
 import picocli.CommandLine.Option
+import software.sava.core.accounts.PublicKey
 
 /**
  * Command to authorize a notary account.
@@ -32,17 +30,25 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
     )
     private lateinit var networkId: String
 
-    private val solanaConfig by lazy { SolanaConfig(shared.keypairPath, shared.rpcUrl, shared.commitment) }
-
     override fun runProgram(): Int {
+        val solanaConfig = shared.toSolanaConfig()
         solanaConfig.validateNotaryAddress(notaryAddress)
 
         println("Authorizing notary $notaryAddress...")
 
-        val notaryAccount = Solana.account(notaryAddress)
-        val instruction = CordaNotary.AuthorizeNotary(notaryAccount, solanaConfig.wallet, networkId.toShort())
         return try {
-            solanaConfig.rpcClient.sendAndConfirm(instruction)
+            solanaConfig.client.sendAndConfirm(
+                {
+                    it.createTransaction(
+                        AuthorizeNotary.instruction(
+                            PublicKey.fromBase58Encoded(notaryAddress),
+                            solanaConfig.wallet.publicKey(),
+                            networkId.toShort()
+                        )
+                    )
+                },
+                solanaConfig.wallet
+            )
             println("✓ Notary authorized successfully: $notaryAddress")
             ExitCodes.SUCCESS
         } catch (e: SolanaTransactionException) {

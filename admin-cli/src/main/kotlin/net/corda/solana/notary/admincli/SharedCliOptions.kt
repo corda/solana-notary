@@ -1,7 +1,7 @@
 package net.corda.solana.notary.admincli
 
-import com.lmax.solana4j.client.api.Commitment
 import picocli.CommandLine.Option
+import software.sava.rpc.json.http.request.Commitment
 
 class SharedCliOptions {
     @Option(
@@ -12,7 +12,7 @@ class SharedCliOptions {
     var keypairPath: String? = null
 
     @Option(
-        names = ["--url", "-u"],
+        names = ["--rpc"],
         description = [
             "Optional: The RPC URL of the Solana cluster to connect to",
             "Default: taken from the ~/.config/solana/cli/config.yaml file"
@@ -20,6 +20,16 @@ class SharedCliOptions {
         required = false
     )
     var rpcUrl: String? = null
+
+    @Option(
+        names = ["--websocket"],
+        description = [
+            "Optional: The websocket URL of the Solana cluster to connect to",
+            "Default: taken from the ~/.config/solana/cli/config.yaml file"
+        ],
+        required = false
+    )
+    var websocketUrl: String? = null
 
     @Option(
         names = ["--commitment", "-c"],
@@ -30,4 +40,6 @@ class SharedCliOptions {
         required = false
     )
     var commitment: Commitment? = null
+
+    fun toSolanaConfig(): SolanaConfig = SolanaConfig(keypairPath, rpcUrl, websocketUrl, commitment)
 }

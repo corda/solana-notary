@@ -1,6 +1,5 @@
 package net.corda.solana.notary.client.generator
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
 import com.fasterxml.jackson.databind.JsonNode
@@ -19,7 +18,8 @@ class AnchorIdl(
         val name: String,
         val discriminator: ByteArray,
         val accounts: List<InstructionAccount>,
-        val args: List<Arg>
+        val args: List<Arg>,
+        val docs: List<String>?
     )
 
     class InstructionAccount(
@@ -45,7 +45,7 @@ class AnchorIdl(
         class Account(val path: String, val account: String?) : Seed
     }
 
-    class Arg(val name: String, val type: JsonNode)
+    class Arg(val name: String, val type: JsonNode, val docs: List<String>?)
 
     class Account(val name: String, val discriminator: ByteArray)
 
@@ -57,29 +57,6 @@ class AnchorIdl(
     sealed interface AnchorTypeDef {
 
         @JsonTypeName("struct")
-        class Struct(val fields: List<Field>) : AnchorTypeDef {
-
-            sealed interface Field {
-                class Named(val name: String, val type: JsonNode) : Field
-                class Unnamed(val type: String) : Field
-                class FixedArray(val type: String, val size: Int) : Field
-
-                companion object {
-                    @JvmStatic
-                    @JsonCreator
-                    fun creator(json: JsonNode): Field {
-                        return when {
-                            json.isTextual -> Unnamed(json.textValue())
-                            json["name"] != null -> Named(json["name"].textValue(), json["type"]!!)
-                            json["array"] != null -> {
-                                val array = json["array"]
-                                FixedArray(array[0].textValue(), array[1].intValue())
-                            }
-                            else -> throw UnsupportedOperationException("${json.toPrettyString()}")
-                        }
-                    }
-                }
-            }
-        }
+        class Struct(val fields: List<JsonNode>) : AnchorTypeDef
     }
 }

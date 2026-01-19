@@ -15,9 +15,8 @@ dependencies {
     implementation(libs.slf4j.api)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.kotlin)
-    implementation(libs.bouncycastle)
-    implementation(libs.solana4j.core)
-    implementation(libs.solana4j.rpc)
+    implementation(libs.sava.core)
+    implementation(libs.sava.rpc)
 
     runtimeOnly(libs.logback)
 

@@ -29,7 +29,7 @@ dependencies {
     codeGeneratorImplementation(libs.guava)
 
     implementation(project(":common"))
-    implementation(libs.solana4j.core)
+    implementation(libs.sava.core)
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {
@@ -37,7 +37,7 @@ tasks.register<JavaExec>("generateKotlinClient") {
     dependsOn(generateIdlTask)
     outputs.dir(generatedKotlinDir)
     classpath = sourceSets["codeGenerator"].runtimeClasspath
-    mainClass = "net.corda.solana.notary.client.generator.KotlinClientCodeGeneratorKt"
+    mainClass = "net.corda.solana.notary.client.generator.EntryPointKt"
     doFirst {
         args(
             generateIdlTask.get().outputs.files.singleFile,
