@@ -58,18 +58,22 @@ cd solana-aggregator/notary-program
 anchor build
 
 # Start the Solana Test Validator and deploy the Notary Program
-solana-test-validator --reset --ledger ../admin-cli/build/test-ledger --bpf-program target/deploy/corda_notary-keypair.json target/deploy/corda_notary.so
+solana-test-validator --reset --ledger ../admin-cli/build/test-ledger --bpf-program notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY target/deploy/corda_notary.so
 
 ```
 
 ### 2. Deploy Notary Program
 
 ```bash
+ADMIN_KEYPAIR_FILE="../solana-program/target/deploy/corda_notary-keypair.json"
+```
+
+```bash
 # Airdrop SOL to notary program admin development key
-solana airdrop -k solana-aggregator/notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json --commitment confirmed 10
+solana airdrop -k $ADMIN_KEYPAIR_FILE --commitment confirmed 10
 
 # Airdrop SOL to notary account development key
-solana airdrop -k solana-aggregator/notary-program/dev-keys/DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3.json --commitment confirmed 10
+solana airdrop -k <NOTARY_ACCOUNT_DEV_KEY> --commitment confirmed 10
 ```
 
 ## Usage
@@ -79,7 +83,7 @@ From the admin-cli directory, you can run the Admin CLI commands to manage the C
 ### Basic Command Structure
 
 ```bash
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar [COMMAND] [OPTIONS]
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar [COMMAND] [OPTIONS]
 ```
 
 ### Available Commands
@@ -89,7 +93,7 @@ java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar [COMMAND] [OPTIONS]
 Initializes a new Corda Notary on the Solana blockchain.
 
 ```bash
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar initialize [OPTIONS]
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar initialize [OPTIONS]
 ```
 
 Sets up the initial notary configuration and deploys necessary smart contracts to the Solana blockchain.
@@ -98,33 +102,33 @@ Sets up the initial notary configuration and deploys necessary smart contracts t
 
 ```bash
 # Initializes the Corda Notary program on the Solana blockchain
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar initialize --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar initialize --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
 ```
 
 ```bash
 # Creates a new network with the specified ID so the notaries can be authorized to
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar create-network --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar create-network --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
 ```
 
 
 ```bash
 # Authorizes the given notary account (specified by the --address option) on the given network ID (specified by the --network option)
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
 ```
 
 ```bash
 # Lists all the notaries in the network
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar list-notaries --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar list-notaries --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
 ```
 
 ```bash
 # Revokes the notary account authorization
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
 ```
 
 #### Help
 Displays help information for the CLI commands.
 
 ```bash
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar --help
+java -jar build/libs/admin-cli-0.1.3-SNAPSHOT-all.jar --help
 ```

@@ -9,7 +9,7 @@ An appropriately configured Corda notary node can delegate the tracking of spent
 
 This repo is a multi-module Gradle project with the following modules. Each module which is published has a Maven
 group ID of `net.corda.solana.notary`. It uses the
-[axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the verion based on git
+[axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the version based on git
 tags.
 
 ### `solana-program`
