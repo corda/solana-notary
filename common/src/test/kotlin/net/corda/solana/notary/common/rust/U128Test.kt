@@ -32,7 +32,7 @@ class U128Test {
     }
 
     @Test
-    fun `U128 borsh`() {
+    fun `U128 read`() {
         assertThat(readU128(ByteArray(16))).isEqualTo(BigInteger.ZERO)
         assertThat(readU128(byteArrayOf(1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)))
             .isEqualTo(BigInteger.ONE)

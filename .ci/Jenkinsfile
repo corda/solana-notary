@@ -54,10 +54,15 @@ pipeline {
         sh 'solana config get'
       }
     }
-    stage('Test and Publish') {
+    stage('Test') {
       steps {
-        authenticateGradleWrapper()
-        sh './gradlew --no-daemon clean check artifactoryPublish'
+        sh './gradlew --no-daemon currentVersion'
+        sh './gradlew --no-daemon clean check'
+      }
+    }
+    stage('Publish') {
+      steps {
+        sh './gradlew --no-daemon artifactoryPublish'
       }
     }
   }

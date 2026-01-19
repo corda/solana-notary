@@ -15,7 +15,6 @@ import kotlin.io.path.writeText
  *
  * NOTE: Changes to the underlying file will not be reflected in the [FileSigner] instance.
  */
-@Suppress("MagicNumber")
 class FileSigner private constructor(val file: Path, private val signer: Signer) : Signer by signer {
     companion object {
         /**
