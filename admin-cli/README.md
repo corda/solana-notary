@@ -72,7 +72,7 @@ ADMIN_KEYPAIR_FILE="../solana-program/target/deploy/corda_notary-keypair.json"
 # Airdrop SOL to notary program admin development key
 solana airdrop -k $ADMIN_KEYPAIR_FILE --commitment confirmed 10
 
-# Airdrop SOL to notary account development key
+# Airdrop SOL to notary account development key, replace <NOTARY_ACCOUNT_DEV_KEY> with the notary key
 solana airdrop -k <NOTARY_ACCOUNT_DEV_KEY> --commitment confirmed 10
 ```
 
