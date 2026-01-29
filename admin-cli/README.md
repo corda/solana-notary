@@ -48,28 +48,33 @@ commitment: confirmed
 
 **Note:** In order to use a different wallet, replace the `keypair_path` with the path to your desired keypair file.
 
-## Setup (For LocalNet Testing)
+## Setup (For localnet Testing)
 
 ### 1. Build the Notary Program and start Solana Test Validator
 
 ```bash
 # Build the Notary Program
-cd solana-aggregator/notary-program
+cd solana-program
 anchor build
 
 # Start the Solana Test Validator and deploy the Notary Program
-solana-test-validator --reset --ledger ../admin-cli/build/test-ledger --bpf-program target/deploy/corda_notary-keypair.json target/deploy/corda_notary.so
+solana-test-validator --reset --ledger ../admin-cli/build/test-ledger --bpf-program notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY target/deploy/corda_notary.so
 
 ```
 
 ### 2. Deploy Notary Program
 
+In a new terminal window, create a new admin keypair:
+```bash
+solana-keygen new -o build/admin-keypair.json
+```
+
 ```bash
 # Airdrop SOL to notary program admin development key
-solana airdrop -k solana-aggregator/notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json --commitment confirmed 10
+solana airdrop -k build/admin-keypair.json --commitment confirmed 10
 
-# Airdrop SOL to notary account development key
-solana airdrop -k solana-aggregator/notary-program/dev-keys/DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3.json --commitment confirmed 10
+# Airdrop SOL to notary account development key if necessary, replace <NOTARY_ACCOUNT_DEV_KEY> with the notary key
+solana airdrop -k <NOTARY_ACCOUNT_DEV_KEY> --commitment confirmed 10
 ```
 
 ## Usage
@@ -79,7 +84,7 @@ From the admin-cli directory, you can run the Admin CLI commands to manage the C
 ### Basic Command Structure
 
 ```bash
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar [COMMAND] [OPTIONS]
+java -jar build/libs/admin-cli.jar [COMMAND] [OPTIONS]
 ```
 
 ### Available Commands
@@ -89,42 +94,43 @@ java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar [COMMAND] [OPTIONS]
 Initializes a new Corda Notary on the Solana blockchain.
 
 ```bash
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar initialize [OPTIONS]
+java -jar build/libs/admin-cli.jar initialize [OPTIONS]
 ```
 
 Sets up the initial notary configuration and deploys necessary smart contracts to the Solana blockchain.
 
 **Example:**
+Run from `admin-cli` directory:
 
 ```bash
 # Initializes the Corda Notary program on the Solana blockchain
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar initialize --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli.jar initialize --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 ```bash
 # Creates a new network with the specified ID so the notaries can be authorized to
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar create-network --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli.jar create-network --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 
 ```bash
 # Authorizes the given notary account (specified by the --address option) on the given network ID (specified by the --network option)
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 ```bash
 # Lists all the notaries in the network
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar list-notaries --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli.jar list-notaries --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 ```bash
 # Revokes the notary account authorization
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --rpc http://localhost:8900 -k ../notary-program/dev-keys/DevAD5S5AFhTTCmrD8Jg58bDhbZabSzth7Bu6rG4HFYo.json
+java -jar build/libs/admin-cli.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 #### Help
 Displays help information for the CLI commands.
 
 ```bash
-java -jar build/libs/admin-cli-4.13-SNAPSHOT.jar --help
+java -jar build/libs/admin-cli.jar --help
 ```

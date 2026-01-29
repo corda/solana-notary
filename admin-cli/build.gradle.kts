@@ -1,3 +1,5 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id("default-kotlin")
     application
@@ -29,8 +31,16 @@ tasks.jar {
     }
 }
 
+val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
+    archiveClassifier.set("") // remove "-all"
+    archiveVersion.set("")
+}
+
+tasks.build {
+    dependsOn(shadowJarTask)
+}
+
 tasks.test {
-    val shadowJarTask = tasks.named<Jar>("shadowJar")
     dependsOn(shadowJarTask)
     systemProperty("gradle.test.version", version)
     doFirst {
