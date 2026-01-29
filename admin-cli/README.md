@@ -64,13 +64,14 @@ solana-test-validator --reset --ledger ../admin-cli/build/test-ledger --bpf-prog
 
 ### 2. Deploy Notary Program
 
+In a new terminal window, create a new admin keypair:
 ```bash
-ADMIN_KEYPAIR_FILE="../solana-program/target/deploy/corda_notary-keypair.json"
+solana-keygen new -o build/admin-keypair.json
 ```
 
 ```bash
 # Airdrop SOL to notary program admin development key
-solana airdrop -k $ADMIN_KEYPAIR_FILE --commitment confirmed 10
+solana airdrop -k build/admin-keypair.json --commitment confirmed 10
 
 # Airdrop SOL to notary account development key if necessary, replace <NOTARY_ACCOUNT_DEV_KEY> with the notary key
 solana airdrop -k <NOTARY_ACCOUNT_DEV_KEY> --commitment confirmed 10
@@ -99,31 +100,32 @@ java -jar build/libs/admin-cli.jar initialize [OPTIONS]
 Sets up the initial notary configuration and deploys necessary smart contracts to the Solana blockchain.
 
 **Example:**
+Run from `admin-cli` directory:
 
 ```bash
 # Initializes the Corda Notary program on the Solana blockchain
-java -jar build/libs/admin-cli.jar initialize --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
+java -jar build/libs/admin-cli.jar initialize --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 ```bash
 # Creates a new network with the specified ID so the notaries can be authorized to
-java -jar build/libs/admin-cli.jar create-network --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
+java -jar build/libs/admin-cli.jar create-network --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 
 ```bash
 # Authorizes the given notary account (specified by the --address option) on the given network ID (specified by the --network option)
-java -jar build/libs/admin-cli.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
+java -jar build/libs/admin-cli.jar authorize --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --network 0 --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 ```bash
 # Lists all the notaries in the network
-java -jar build/libs/admin-cli.jar list-notaries --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
+java -jar build/libs/admin-cli.jar list-notaries --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 ```bash
 # Revokes the notary account authorization
-java -jar build/libs/admin-cli.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --rpc http://localhost:8900 -k $ADMIN_KEYPAIR_FILE
+java -jar build/libs/admin-cli.jar revoke --address DevNMdtQW3Q4ybKQvxgwpJj84h5mb7JE218qTpZQnoA3 --rpc http://localhost:8899 --websocket ws://localhost:8900 -k ../build/admin-keypair.json
 ```
 
 #### Help
