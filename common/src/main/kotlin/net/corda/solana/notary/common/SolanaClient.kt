@@ -432,19 +432,36 @@ constructor(
         val method = methodOverloads.find {
             val parameters = it.parameters
             rpcArgs.size == parameters.size &&
-                rpcArgs.zip(parameters).all { (arg, parameter) -> parameter.type.isAssignableFrom(arg.javaClass) }
+                rpcArgs.zip(parameters).all { (arg, parameter) ->
+                    parameter.type.toBoxedClass().isAssignableFrom(arg.javaClass)
+                }
         }
         requireNotNull(method) {
             val message = StringBuilder("No matching overload found for [")
             rpcArgs.joinTo(message, postfix = "']:\n") { it.javaClass.name }
             methodOverloads.joinTo(message, separator = "\n")
         }
-        require((method.genericReturnType as ParameterizedType).actualTypeArguments[0] == resultType) {
-            "$methodName does not give a ${resultType.name} result: $method"
+        val actualResultType = (method.genericReturnType as ParameterizedType).actualTypeArguments[0] as Class<*>
+        require(actualResultType == resultType) {
+            "$methodName returns a ${actualResultType.name}, not a ${resultType.name}"
         }
         return getRateLimiter(methodName).retryingCall(rpcArgs) {
             @Suppress("UNCHECKED_CAST")
             method.invoke(rpc, *rpcArgs) as CompletableFuture<R>
+        }
+    }
+
+    private fun Class<*>.toBoxedClass(): Class<*> {
+        return when {
+            this == Long::class.javaPrimitiveType -> Long::class.javaObjectType
+            this == Double::class.javaPrimitiveType -> Double::class.javaObjectType
+            this == Int::class.javaPrimitiveType -> Int::class.javaObjectType
+            this == Float::class.javaPrimitiveType -> Float::class.javaObjectType
+            this == Short::class.javaPrimitiveType -> Short::class.javaObjectType
+            this == Boolean::class.javaPrimitiveType -> Boolean::class.javaObjectType
+            this == Byte::class.javaPrimitiveType -> Byte::class.javaObjectType
+            this == Char::class.javaPrimitiveType -> Char::class.javaObjectType
+            else -> this
         }
     }
 
