@@ -10,13 +10,5 @@ java {
 }
 
 dependencies {
-    api(libs.sava.programs)
-
     implementation(libs.sava.core)
-    implementation(libs.sava.rpc)
-    implementation(libs.bucket4j)
-    implementation(libs.slf4j.api)
-    implementation("org.jetbrains.kotlin:kotlin-reflect:${libs.versions.kotlin.corda.get()}")
-
-    testImplementation(project(":notary-test"))
 }

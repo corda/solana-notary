@@ -15,10 +15,14 @@ java {
 dependencies {
     val libs = versionCatalogs.named("libs")
 
-    testImplementation(libs.findLibrary("junit.jupiter").get())
+    testImplementation(libs.findLibrary("junit").get())
     testImplementation(libs.findLibrary("assertj.core").get())
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+tasks.withType<JavaCompile> {
+    options.compilerArgs.add("-parameters")
 }
 
 tasks.withType<Test> {

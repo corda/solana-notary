@@ -1,19 +1,19 @@
 package net.corda.solana.notary.admincli
 
+import com.r3.corda.lib.solana.core.FileSigner
+import com.r3.corda.lib.solana.core.SolanaTransactionException
+import com.r3.corda.lib.solana.core.SolanaUtils
+import com.r3.corda.lib.solana.testing.ConfigureValidator
+import com.r3.corda.lib.solana.testing.SolanaTestClass
+import com.r3.corda.lib.solana.testing.SolanaTestValidator
 import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.client.instructions.Commit
 import net.corda.solana.notary.client.types.FlaggedU8
 import net.corda.solana.notary.client.types.StateRefGroup
 import net.corda.solana.notary.client.types.TxId
-import net.corda.solana.notary.common.FileSigner
-import net.corda.solana.notary.common.SolanaClient
-import net.corda.solana.notary.common.SolanaTransactionException
-import net.corda.solana.notary.common.SolanaUtils.randomSigner
-import net.corda.solana.notary.test.SolanaTestValidator
-import net.corda.solana.notary.test.TestingSupport
+import net.corda.solana.notary.test.NotaryEnvironment
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy
-import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -22,46 +22,35 @@ import software.sava.core.accounts.PublicKey
 import software.sava.core.accounts.Signer
 import software.sava.core.accounts.meta.AccountMeta
 import software.sava.core.encoding.ByteUtil
-import software.sava.rpc.json.http.client.SolanaRpcClient
 import java.nio.file.Path
 import kotlin.experimental.or
 import kotlin.io.path.absolutePathString
 import kotlin.random.Random
 
+@SolanaTestClass
 class IntegrationTests {
     companion object {
         private const val REFERENCE_MASK = 0b1000_0000.toByte()
 
         private lateinit var testValidator: SolanaTestValidator
-        private lateinit var client: SolanaClient
-
         private lateinit var admin: FileSigner
+
+        @ConfigureValidator
+        @JvmStatic
+        fun configureValidator(builder: SolanaTestValidator.Builder) {
+            NotaryEnvironment.addNotaryProgram(builder)
+        }
 
         @BeforeAll
         @JvmStatic
-        fun startTestValidator(@TempDir ledger: Path) {
-            val builder = SolanaTestValidator
-                .builder()
-                .ledger(ledger)
-                .dynamicPorts()
-            TestingSupport.addNotaryProgram(builder)
-            testValidator = builder.start().waitForReadiness()
-            client = testValidator.connectClient()
-            admin = FileSigner.random(ledger)
+        fun beforeAll(testValidator: SolanaTestValidator, @TempDir tempDir: Path) {
+            this.testValidator = testValidator
+            admin = FileSigner.random(tempDir)
             fundAccount(admin)
         }
 
-        @AfterAll
-        @JvmStatic
-        fun close() {
-            if (::testValidator.isInitialized) {
-                testValidator.close()
-            }
-        }
-
-        private fun fundAccount(signer: Signer = randomSigner()): Signer {
-            val signature = client.call(SolanaRpcClient::requestAirdrop, signer.publicKey(), 1_000_000_000)
-            client.asyncConfirm(signature).get()
+        private fun fundAccount(signer: Signer = SolanaUtils.randomSigner()): Signer {
+            testValidator.accounts().airdropSol(signer.publicKey(), 10)
             return signer
         }
     }
@@ -128,9 +117,9 @@ class IntegrationTests {
                 "-k",
                 admin.file.absolutePathString(),
                 "--rpc",
-                testValidator.rpcEndpoint().toString(),
+                testValidator.rpcUrl().toString(),
                 "--websocket",
-                testValidator.wsEndpoint().toString(),
+                testValidator.websocketUrl().toString(),
                 "-c",
                 "CONFIRMED",
                 "-v"
@@ -143,7 +132,7 @@ class IntegrationTests {
     private fun commitRandomInputState(notary: Signer, networkId: Short) {
         val consumingTxId = TxId(Random.nextBytes(32))
         val inputStateTxId = TxId(Random.nextBytes(32))
-        client.sendAndConfirm(
+        testValidator.client().sendAndConfirm(
             {
                 it.createTransaction(
                     Commit.instruction(

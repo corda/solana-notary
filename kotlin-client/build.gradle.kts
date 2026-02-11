@@ -28,8 +28,8 @@ dependencies {
     codeGeneratorImplementation(libs.jackson.kotlin)
     codeGeneratorImplementation(libs.guava)
 
-    implementation(project(":common"))
-    implementation(libs.sava.core)
+    api(project(":common"))
+    api(libs.sava.core)
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {

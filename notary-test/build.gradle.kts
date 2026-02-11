@@ -10,11 +10,9 @@ java {
 }
 
 dependencies {
-    implementation(project(":common"))
     implementation(project(":kotlin-client"))
-    implementation(libs.sava.core)
-    implementation(libs.sava.rpc)
-    implementation(libs.slf4j.api)
+    implementation(libs.corda.solana.core)
+    implementation(libs.corda.solana.testing)
 
     runtimeOnly(project(":solana-program"))
 }

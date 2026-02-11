@@ -1,34 +1,37 @@
 [versions]
-kotlin-main = "2.2.20"
+artifactory = "6.0.2"
+assertj = "3.27.7"
+bucket4j = "8.16.1"
+corda-solana = "0.1.2"
+detekt = "2.0.0-alpha.2"
+guava = "33.5.0-jre"
+jackson = "2.21.0"
+junit = "6.0.2"
 kotlin-corda = "1.9.25"
+kotlin-main = "2.2.20"
+kotlinpoet = "2.2.0"
+logback = "1.5.29"
+picocli = "3.9.6"
 sava-core = "25.1.2-j17-2"
 sava-programs = "25.0.0-j17-1"
-jackson = "2.21.0"
-kotlinpoet = "2.2.0"
-guava = "33.5.0-jre"
-bucket4j = "8.16.1"
-picocli = "3.9.6"
 slf4j = "2.0.17"
-logback = "1.5.29"
-junit-jupiter = "6.0.2"
-assertj = "3.27.7"
-artifactory = "6.0.2"
-detekt = "2.0.0-alpha.2"
 
 [libraries]
-picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+bucket4j = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
+corda-solana-core = { module = "com.r3.corda.lib.solana:core", version.ref = "corda-solana" }
+corda-solana-testing = { module = "com.r3.corda.lib.solana:testing", version.ref = "corda-solana" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
-slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
-logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
-sava-core = { module = "software.sava:sava-core", version.ref = "sava-core" }
-sava-rpc = { module = "software.sava:sava-rpc", version.ref = "sava-core" }
-sava-programs = { module = "software.sava:solana-programs", version.ref = "sava-programs" }
-bucket4j = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
-guava = { module = "com.google.guava:guava", version.ref = "guava" }
+junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
-assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
+picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
+sava-core = { module = "software.sava:sava-core", version.ref = "sava-core" }
+sava-programs = { module = "software.sava:solana-programs", version.ref = "sava-programs" }
+sava-rpc = { module = "software.sava:sava-rpc", version.ref = "sava-core" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version = "9.3.1" }

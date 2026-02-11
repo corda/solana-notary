@@ -1,10 +1,10 @@
 package net.corda.solana.notary.admincli.cmds
 
+import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
 import net.corda.solana.notary.client.instructions.AuthorizeNotary
-import net.corda.solana.notary.common.SolanaTransactionException
 import picocli.CommandLine
 import picocli.CommandLine.Option
 import software.sava.core.accounts.PublicKey

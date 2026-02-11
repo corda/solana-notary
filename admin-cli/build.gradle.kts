@@ -12,17 +12,16 @@ application {
 
 dependencies {
     implementation(project(":kotlin-client"))
-    implementation(project(":common"))
+    implementation(libs.corda.solana.core)
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
     implementation(libs.jackson.dataformat.yaml)
     implementation(libs.jackson.kotlin)
-    implementation(libs.sava.core)
-    implementation(libs.sava.rpc)
 
     runtimeOnly(libs.logback)
 
     testImplementation(project(":notary-test"))
+    testImplementation(libs.corda.solana.testing)
 }
 
 tasks.jar {

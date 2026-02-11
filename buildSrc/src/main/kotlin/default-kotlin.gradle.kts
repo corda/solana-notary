@@ -10,6 +10,12 @@ dependencies {
     detektPlugins("dev.detekt:detekt-rules-ktlint-wrapper:${libs.findVersion("detekt").get()}")
 }
 
+kotlin {
+    compilerOptions {
+        javaParameters = true
+    }
+}
+
 detekt {
     config.setFrom(rootProject.file("detekt.yml"))
     buildUponDefaultConfig = true

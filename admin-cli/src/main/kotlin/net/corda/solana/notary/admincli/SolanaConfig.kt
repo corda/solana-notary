@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import net.corda.solana.notary.common.FileSigner
-import net.corda.solana.notary.common.SolanaClient
+import com.r3.corda.lib.solana.core.FileSigner
+import com.r3.corda.lib.solana.core.SolanaClient
 import software.sava.rpc.json.http.request.Commitment
 import java.io.IOException
 import java.net.URI
