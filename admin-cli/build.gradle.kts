@@ -20,7 +20,7 @@ dependencies {
 
     runtimeOnly(libs.logback)
 
-    testImplementation(project(":notary-test"))
+    testImplementation(project(":testing"))
     testImplementation(libs.corda.solana.testing)
 }
 

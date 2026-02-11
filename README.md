@@ -32,9 +32,9 @@ compilation phase, generating the client source code.
 
 Admin CLI for managing the notary program.
 
-### `notary-test`
+### `testing`
 
-Testing helper library for when writing JUnit tests which need the Solana notary.
+Testing library for when writing JUnit tests which need the Solana notary.
 
 ## Build
 

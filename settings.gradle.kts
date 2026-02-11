@@ -5,7 +5,7 @@ include(
     "common",
     "kotlin-client",
     "solana-program",
-    "notary-test"
+    "testing"
 )
 
 @Suppress("UnstableApiUsage")
