@@ -15,10 +15,11 @@ java {
 dependencies {
     val libs = versionCatalogs.named("libs")
 
-    testImplementation(libs.findLibrary("junit").get())
+    testImplementation(libs.findLibrary("junit.core").get())
     testImplementation(libs.findLibrary("assertj.core").get())
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    testRuntimeOnly(libs.findLibrary("slf4j.simple").get())
 }
 
 tasks.withType<JavaCompile> {

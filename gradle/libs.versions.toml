@@ -24,7 +24,8 @@ corda-solana-testing = { module = "com.r3.corda.lib.solana:testing", version.ref
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
-junit = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
+junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
+junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 logback = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
@@ -32,6 +33,7 @@ sava-core = { module = "software.sava:sava-core", version.ref = "sava-core" }
 sava-programs = { module = "software.sava:solana-programs", version.ref = "sava-programs" }
 sava-rpc = { module = "software.sava:sava-rpc", version.ref = "sava-core" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 [plugins]
 shadow = { id = "com.gradleup.shadow", version = "9.3.1" }
