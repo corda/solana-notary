@@ -12,7 +12,6 @@ application {
 
 dependencies {
     implementation(project(":kotlin-client"))
-    implementation(libs.corda.solana.core)
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
     implementation(libs.jackson.dataformat.yaml)

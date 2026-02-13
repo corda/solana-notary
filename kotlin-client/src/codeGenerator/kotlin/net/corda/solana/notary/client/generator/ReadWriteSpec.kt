@@ -1,10 +1,10 @@
 package net.corda.solana.notary.client.generator
 
+import com.r3.corda.lib.solana.core.internal.BorshUtils
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.MemberName.Companion.member
 import com.squareup.kotlinpoet.ParameterSpec
-import net.corda.solana.notary.common.internal.BorshUtils
 import software.sava.core.accounts.PublicKey.PUBLIC_KEY_LENGTH
 import software.sava.core.encoding.ByteUtil
 
