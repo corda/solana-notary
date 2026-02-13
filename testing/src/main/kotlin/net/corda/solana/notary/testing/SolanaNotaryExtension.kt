@@ -47,6 +47,8 @@ import kotlin.io.path.div
  * authorised onto the program by the admin.
  *
  * For further customisation access to an [NotaryEnvironment] instance is also possible.
+ *
+ * Note, it is required Solana be [installed](https://solana.com/docs/intro/installation) locally to use this extension.
  */
 class SolanaNotaryExtension : ParameterResolver, AfterAllCallback {
     private companion object {
