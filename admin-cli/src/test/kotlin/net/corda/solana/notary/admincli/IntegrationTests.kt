@@ -11,7 +11,7 @@ import net.corda.solana.notary.client.instructions.Commit
 import net.corda.solana.notary.client.types.FlaggedU8
 import net.corda.solana.notary.client.types.StateRefGroup
 import net.corda.solana.notary.client.types.TxId
-import net.corda.solana.notary.test.NotaryEnvironment
+import net.corda.solana.notary.testing.NotaryEnvironment
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy
 import org.junit.jupiter.api.Assertions.fail
@@ -27,6 +27,7 @@ import kotlin.experimental.or
 import kotlin.io.path.absolutePathString
 import kotlin.random.Random
 
+// This can't use SolanaNotaryExtension as we are testing the CLI can initialise a newly deployed program
 @SolanaTestClass
 class IntegrationTests {
     companion object {

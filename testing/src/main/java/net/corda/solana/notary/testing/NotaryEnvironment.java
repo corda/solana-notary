@@ -1,4 +1,4 @@
-package net.corda.solana.notary.test;
+package net.corda.solana.notary.testing;
 
 import com.r3.corda.lib.solana.core.*;
 import com.r3.corda.lib.solana.testing.SolanaTestValidator;
@@ -22,9 +22,13 @@ public class NotaryEnvironment {
     private final Signer admin;
     private short nextNetworkId;
 
-    public NotaryEnvironment(SolanaClient client) {
+    public NotaryEnvironment(SolanaClient client, Signer admin) {
         this.client = Objects.requireNonNull(client);
-        admin = SolanaUtils.randomSigner();
+        this.admin = Objects.requireNonNull(admin);
+    }
+
+    public NotaryEnvironment(SolanaClient client) {
+        this(client, SolanaUtils.randomSigner());
     }
 
     public SolanaClient client() {
@@ -80,16 +84,23 @@ public class NotaryEnvironment {
     }
 
     public static SolanaTestValidator.Builder addNotaryProgram(SolanaTestValidator.Builder builder) {
-        Path programFile;
-        try (var stream = Objects.requireNonNull(
-            NotaryEnvironment.class.getResourceAsStream("/net/corda/solana/notary/program/corda_notary.so")
-        )) {
-            programFile = Files.createTempFile("corda_notary", ".so");
-            Files.copy(stream, programFile, REPLACE_EXISTING);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-        builder.bpfProgram(CordaNotary.PROGRAM_ID, programFile);
+        builder.bpfProgram(CordaNotary.PROGRAM_ID, NotaryProgram.file);
         return builder;
+    }
+
+    // By putting the notary file in a separate class we avoid doing a file copy when NotaryEnvironment is first loaded.
+    private static class NotaryProgram {
+        private static final Path file;
+        static {
+            try (var stream = Objects.requireNonNull(
+                NotaryEnvironment.class.getResourceAsStream("/net/corda/solana/notary/program/corda_notary.so")
+            )) {
+                file = Files.createTempFile("corda_notary", ".so");
+                file.toFile().deleteOnExit();
+                Files.copy(stream, file, REPLACE_EXISTING);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
     }
 }
