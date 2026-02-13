@@ -1,5 +1,8 @@
 package net.corda.solana.notary.client.generator
 
+import com.r3.corda.lib.solana.core.internal.BorshUtils
+import com.r3.corda.lib.solana.core.rust.FixedBytesNewtypeStruct
+import com.r3.corda.lib.solana.core.rust.U128
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FunSpec
@@ -20,9 +23,6 @@ import net.corda.solana.notary.client.generator.OutputModel.Instruction.Account
 import net.corda.solana.notary.client.generator.OutputModel.Instruction.Arg
 import net.corda.solana.notary.client.generator.OutputModel.Instruction.Seed
 import net.corda.solana.notary.client.generator.OutputModel.Type
-import net.corda.solana.notary.common.internal.BorshUtils
-import net.corda.solana.notary.common.rust.FixedBytesNewtypeStruct
-import net.corda.solana.notary.common.rust.U128
 import software.sava.core.accounts.ProgramDerivedAddress
 import software.sava.core.accounts.PublicKey
 import software.sava.core.accounts.SolanaAccounts

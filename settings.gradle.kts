@@ -2,7 +2,6 @@ rootProject.name = "solana-notary"
 
 include(
     "admin-cli",
-    "common",
     "kotlin-client",
     "solana-program",
     "testing"
@@ -13,9 +12,7 @@ dependencyResolutionManagement {
     repositories {
         mavenLocal()
         mavenCentral()
-        maven { r3Artifactory("corda-lib") }
         maven { r3Artifactory("corda-dependencies") }
-        maven { url = uri("https://download.corda.net/maven/corda-lib") }
         maven { url = uri("https://download.corda.net/maven/corda-dependencies") }
     }
 }

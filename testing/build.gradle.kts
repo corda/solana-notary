@@ -11,7 +11,6 @@ java {
 
 dependencies {
     implementation(project(":kotlin-client"))
-    implementation(libs.corda.solana.core)
     implementation(libs.corda.solana.testing)
     implementation(libs.junit.api)
     implementation(libs.slf4j.api)
