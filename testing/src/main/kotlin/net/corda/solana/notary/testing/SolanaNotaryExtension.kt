@@ -104,7 +104,7 @@ class SolanaNotaryExtension : ParameterResolver, AfterAllCallback {
     }
 
     private fun ExtensionContext.Store.getRequiredTestClassContext(testClass: Class<*>): TestClassContext {
-        return computeIfAbsent(
+        return getOrComputeIfAbsent(
             ContextKey,
             {
                 val context = TestClassContext(testClass)
@@ -130,7 +130,7 @@ class SolanaNotaryExtension : ParameterResolver, AfterAllCallback {
         val context = getRequiredTestClassContext(testClass)
 
         @Suppress("UNCHECKED_CAST")
-        val networkMap = computeIfAbsent(
+        val networkMap = getOrComputeIfAbsent(
             NetworkKey(notary.network),
             {
                 // Fill in any gaps in the networks
