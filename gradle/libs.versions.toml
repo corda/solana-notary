@@ -2,7 +2,7 @@
 artifactory = "6.0.2"
 assertj = "3.27.7"
 bucket4j = "8.16.1"
-corda-solana = "0.1.6"
+corda-solana = "0.1.7"
 detekt = "2.0.0-alpha.2"
 guava = "33.5.0-jre"
 jackson = "2.21.0"
@@ -17,8 +17,8 @@ slf4j = "2.0.17"
 [libraries]
 assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 bucket4j = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4j" }
-corda-solana-core = { module = "com.r3.corda.lib.solana:core", version.ref = "corda-solana" }
-corda-solana-testing = { module = "com.r3.corda.lib.solana:testing", version.ref = "corda-solana" }
+corda-solana-core = { module = "com.r3.corda.lib.solana:corda-solana-core", version.ref = "corda-solana" }
+corda-solana-testing = { module = "com.r3.corda.lib.solana:corda-solana-testing", version.ref = "corda-solana" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
