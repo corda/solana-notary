@@ -15,5 +15,5 @@ dependencies {
     implementation(libs.junit.api)
     implementation(libs.slf4j.api)
 
-    runtimeOnly(project(":solana-program"))
+    runtimeOnly(project(":program"))
 }

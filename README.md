@@ -8,13 +8,14 @@ An appropriately configured Corda notary node can delegate the tracking of spent
 ## Overview
 
 This repo is a multi-module Gradle project with the following modules. Each module which is published has a Maven
-group ID of `net.corda.solana.notary`. It uses the
-[axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the version based on git
-tags.
+group ID of `net.corda.solana.notary` and `solana-notary-` file name prefix,
+for example `program` artifact is `net.corda.solana.notary:solana-notary-program:<VERSION>`.
+It uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/)
+for managing the version based on git tags.
 
-### `solana-program`
+### `program`
 
-The on-chain Solana program written using Anchor. It has its own [Gradle build file](solana-program/build.gradle.kts)
+The on-chain Solana program written using Anchor. It has its own [Gradle build file](program/build.gradle.kts)
 which hooks the Cargo/Anchor build process into Gradle's. This means, for example, running `./gradlew test` will
 run the tests in all the modules, including the Rust-based tests in this one.
 
