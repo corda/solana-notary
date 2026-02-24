@@ -23,18 +23,20 @@ file. The version of the program and IDL is in-sync with the other modules.
 
 ### `kotlin-client`
 
-Generated Kotlin client for the program using a forked version of [Sava](https://github.com/corda/sava).
+Generated Kotlin client for the program targeting a forked version of [Sava](https://github.com/corda/sava).
 
 In terms of source code, this module only contains an Anchor IDL code generator. It is invoked before the Kotlin
 compilation phase, generating the client source code.
 
+### `testing`
+
+Testing library for writing JUnit tests which need the Solana notary. In contains
+[`SolanaNotaryExtension`](testing/src/main/kotlin/net/corda/solana/notary/testing/SolanaNotaryExtension.kt) which
+will automatically spin up a `solana-test-validator` configured with the notary program and ready to use.
+
 ### `admin-cli`
 
 Admin CLI for managing the notary program.
-
-### `testing`
-
-Testing library for when writing JUnit tests which need the Solana notary.
 
 ## Build
 
