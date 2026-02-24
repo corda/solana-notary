@@ -23,6 +23,7 @@ extensions.configure<PublishingExtension>("publishing") {
     publications {
         create<MavenPublication>("mainPublication") {
             from(components["java"])
+            artifactId = "solana-notary-${project.name}"
         }
     }
 }

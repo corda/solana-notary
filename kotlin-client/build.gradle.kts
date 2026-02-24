@@ -32,7 +32,7 @@ dependencies {
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {
-    val generateIdlTask = project(":solana-program").tasks.named("generateIdl")
+    val generateIdlTask = project(":program").tasks.named("generateIdl")
     dependsOn(generateIdlTask)
     outputs.dir(generatedKotlinDir)
     classpath = sourceSets["codeGenerator"].runtimeClasspath

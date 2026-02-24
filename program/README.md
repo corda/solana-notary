@@ -10,7 +10,7 @@ The notary program has the following instructions:
 - `initialize`: Called immediately after the program is first deployed. The signer of this transaction is assigned to be
   the admin of the program.
 - `create_network`: Creates a new Corda network namespace. All Corda notaries assigned to the same namespace can be
-  consumed the states of that namesapce. Only the admin can call this instruction.
+  consumed the states of that namespace. Only the admin can call this instruction.
 - `authorize`: Authorises access for a Corda notary address to the specific network. The same address cannot be part
   of multiple networks. Only the admin can call this instruction.
 - `revoke`: Revokes access for a Corda notary.

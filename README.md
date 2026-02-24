@@ -12,9 +12,9 @@ group ID of `net.corda.solana.notary`. It uses the
 [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the version based on git
 tags.
 
-### `solana-program`
+### `program`
 
-The on-chain Solana program written using Anchor. It has its own [Gradle build file](solana-program/build.gradle.kts)
+The on-chain Solana program written using Anchor. It has its own [Gradle build file](program/build.gradle.kts)
 which hooks the Cargo/Anchor build process into Gradle's. This means, for example, running `./gradlew test` will
 run the tests in all the modules, including the Rust-based tests in this one.
 
@@ -45,3 +45,6 @@ To test and build the entire project, including the Solana program:
 ```shell
 ./gradlew clean build
 ```
+
+The projects are build and published with `solana-notary-` prefix,
+so for example the program artifact is `net.corda.solana.notary:solana-notary-program:<VERSION>>`.
