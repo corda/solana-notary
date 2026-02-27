@@ -25,7 +25,8 @@ repositories {
 }
 ```
 
-### `program`
+### [`program`](program/README.md)
+[![License](https://img.shields.io/badge/License-BUSL%201.1-orange.svg)](program/LICENSE)
 
 The on-chain Solana program written using Anchor. It has its own [Gradle build file](program/build.gradle.kts)
 which hooks the Cargo/Anchor build process into Gradle's. This means, for example, running `./gradlew test` will
@@ -35,6 +36,7 @@ This module also has a Maven publication in the form a Jar file containing the c
 file. The version of the program and IDL is in-sync with the other modules.
 
 ### `kotlin-client`
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](kotlin-client/LICENSE)
 
 Generated Kotlin client for the program targeting a forked version of [Sava](https://github.com/corda/sava).
 
@@ -42,12 +44,14 @@ In terms of source code, this module only contains an Anchor IDL code generator.
 compilation phase, generating the client source code.
 
 ### `testing`
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](testing/LICENSE)
 
 Testing library for writing JUnit tests which need the Solana notary. In contains
 [`SolanaNotaryExtension`](testing/src/main/kotlin/net/corda/solana/notary/testing/SolanaNotaryExtension.kt) which
 will automatically spin up a `solana-test-validator` configured with the notary program and ready to use.
 
-### `admin-cli`
+### [`admin-cli`](admin-cli/README.md)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](admin-cli/LICENSE)
 
 Admin CLI for managing the notary program.
 
@@ -61,3 +65,7 @@ To test and build the entire project, including the Solana program:
 
 This project uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing
 the version based on git tags.
+
+## Licensing
+
+Each module is released under [difference licenses](LICENSE.md).
