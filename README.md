@@ -1,17 +1,29 @@
 # Corda Solana Notary
+![Maven](https://img.shields.io/maven-metadata/v?metadataUrl=https://download.corda.net/maven/corda-dependencies/net/corda/solana/notary/solana-notary-program/maven-metadata.xml&label=Maven)
 
-The Corda Solana [notary](https://docs.r3.com/en/platform/corda/4.12/community/key-concepts-notaries.html) is an
-on-chain Solana program that records consumed
-[`StateRef`](https://docs.r3.com/en/api-ref/corda/4.12/community/javadoc/net/corda/core/contracts/StateRef.html)s.
-An appropriately configured Corda notary node can delegate the tracking of spent states to this program.
+The Corda Solana [notary](https://docs.r3.com/en/platform/corda/4.13/community/key-concepts-notaries.html) is an
+on-chain Solana program that tracks consumed
+[`StateRef`](https://docs.r3.com/en/api-ref/corda/4.13/community/javadoc/net/corda/core/contracts/StateRef.html)s.
+An appropriately configured Corda notary can delegate the tracking of spent states to this program. It's deployed to
+both [mainnet](https://solscan.io/account/notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY) and
+[devnet](https://solscan.io/account/notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY?cluster=devnet) with the program ID
+`notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY`.
 
 ## Overview
 
-This repo is a multi-module Gradle project with the following modules. Each module which is published has a Maven
-group ID of `net.corda.solana.notary` and `solana-notary-` file name prefix,
-for example `program` artifact is `net.corda.solana.notary:solana-notary-program:<VERSION>`.
-It uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/)
-for managing the version based on git tags.
+This repository is a multi-module Gradle project. Each (published) module has a group ID of `net.corda.solana.notary`
+and an artifact ID prefixed with`solana-notary-`. For example `kotlin-client` is available at
+`net.corda.solana.notary:solana-notary-kotlin-client:<VERSION>`.
+
+The artifacts are available at the following Maven repo:
+
+```kotlin
+repositories {
+    maven {
+        url = uri("https://download.corda.net/maven/corda-dependencies")
+    }
+}
+```
 
 ### `program`
 
@@ -46,3 +58,6 @@ To test and build the entire project, including the Solana program:
 ```shell
 ./gradlew clean build
 ```
+
+This project uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing
+the version based on git tags.
