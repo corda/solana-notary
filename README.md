@@ -12,8 +12,8 @@ both [mainnet](https://solscan.io/account/notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVf
 ## Overview
 
 This repository is a multi-module Gradle project. Each (published) module has a group ID of `net.corda.solana.notary`
-and an artifact ID prefixed with`solana-notary-`. For example `kotlin-client` is available at
-`net.corda.solana.notary:solana-notary-kotlin-client:<VERSION>`.
+and an artifact ID prefixed with`solana-notary-`. For example `testing` is available at
+`net.corda.solana.notary:solana-notary-testing:<VERSION>`.
 
 The artifacts are available at the following Maven repo:
 
