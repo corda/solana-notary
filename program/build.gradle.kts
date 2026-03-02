@@ -61,3 +61,18 @@ tasks.register<Exec>("rustfmtCheck") {
 tasks.check {
     dependsOn("rustfmtCheck")
 }
+
+publishing {
+    publications {
+        getByName<MavenPublication>("mainPublication") {
+            pom {
+                licenses {
+                    license {
+                        name = "Business Source License 1.1"
+                        url = "https://github.com/corda/solana-notary/blob/main/program/LICENSE"
+                    }
+                }
+            }
+        }
+    }
+}

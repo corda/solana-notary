@@ -22,6 +22,11 @@ configure<ArtifactoryPluginConvention> {
 extensions.configure<PublishingExtension>("publishing") {
     publications {
         create<MavenPublication>("mainPublication") {
+            pom {
+                scm {
+                    url = "https://github.com/corda/solana-notary"
+                }
+            }
             from(components["java"])
             artifactId = "solana-notary-${project.name}"
         }

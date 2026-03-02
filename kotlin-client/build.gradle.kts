@@ -53,3 +53,18 @@ tasks.compileKotlin {
 tasks.named<Jar>("sourcesJar") {
     dependsOn("generateKotlinClient")
 }
+
+publishing {
+    publications {
+        getByName<MavenPublication>("mainPublication") {
+            pom {
+                licenses {
+                    license {
+                        name = "Apache License 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                    }
+                }
+            }
+        }
+    }
+}
