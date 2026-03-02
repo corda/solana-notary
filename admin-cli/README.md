@@ -54,7 +54,7 @@ commitment: confirmed
 
 ```bash
 # Build the Notary Program
-cd solana-program
+cd program
 anchor build
 
 # Start the Solana Test Validator and deploy the Notary Program
