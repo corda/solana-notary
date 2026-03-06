@@ -63,8 +63,7 @@ To test and build the entire project, including the Solana program:
 ./gradlew clean build
 ```
 
-This project uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing
-the version based on git tags.
+This project uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the version based on git tags.
 
 ## Licensing
 
