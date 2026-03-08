@@ -4,16 +4,17 @@
 The Corda Solana [notary](https://docs.r3.com/en/platform/corda/4.13/community/key-concepts-notaries.html) is an
 on-chain Solana program that tracks consumed
 [`StateRef`](https://docs.r3.com/en/api-ref/corda/4.13/community/javadoc/net/corda/core/contracts/StateRef.html)s.
-An appropriately configured Corda notary can delegate the tracking of spent states to this program. It's deployed to
-both [mainnet](https://solscan.io/account/notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY) and
+An appropriately configured Corda notary can delegate the tracking of spent states to this program.
+
+The program is on both [mainnet](https://solscan.io/account/notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY) and
 [devnet](https://solscan.io/account/notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY?cluster=devnet) with the program ID
 `notary95bwkGXj74HV2CXeCn4CgBzRVv5nmEVfqonVY`.
 
 ## Overview
 
-This repository is a multi-module Gradle project. Each (published) module has a group ID of `net.corda.solana.notary`
-and an artifact ID prefixed with`solana-notary-`. For example `testing` is available at
-`net.corda.solana.notary:solana-notary-testing:<VERSION>`.
+This repository is a multi-module Gradle project. Each module has a group ID of `net.corda.solana.notary` and an
+artifact ID prefixed with`solana-notary-`. For example, the Maven coordinates for `testing` is
+`net.corda.solana.notary:solana-notary-testing`.
 
 The artifacts are available at the following Maven repo:
 
@@ -29,11 +30,9 @@ repositories {
 [![License](https://img.shields.io/badge/License-BUSL%201.1-orange.svg)](program/LICENSE)
 
 The on-chain Solana program written using Anchor. It has its own [Gradle build file](program/build.gradle.kts)
-which hooks the Cargo/Anchor build process into Gradle's. This means, for example, running `./gradlew test` will
-run the tests in all the modules, including the Rust-based tests in this one.
+which hooks into the Anchor build process.
 
-This module also has a Maven publication in the form a Jar file containing the compiled program binary and Anchor IDL
-file. The version of the program and IDL is in-sync with the other modules.
+The published Maven artifact is a Jar file containing the program .so binary and Anchor IDL file.
 
 ### `kotlin-client`
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](kotlin-client/LICENSE)
@@ -55,15 +54,45 @@ will automatically spin up a `solana-test-validator` configured with the notary 
 
 Admin CLI for managing the notary program.
 
-## Build
+## Development
 
-To test and build the entire project, including the Solana program:
+To run all the tests, including the Anchor tests in `program`:
 
 ```shell
-./gradlew clean build
+./gradlew check
 ```
 
-This project uses the [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) for managing the version based on git tags.
+## Publishing a release
+
+The [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) is used for managing the version
+via git tags. Run the following to get the current
+[SNAPSHOT](https://maven.apache.org/guides/getting-started/#what-is-a-snapshot-version) version:
+
+```shell
+./gradlew -q currentVersion
+```
+
+> [!NOTE]
+> This is the same version across all the modules. Tt is even included in the Anchor IDL of the notary program. This
+> is done by [dynamically setting](program/programs/corda-notary/build.rs) the `CARGO_PKG_VERSION` environment variable.
+
+Assuming the version is `0.1.9-SNAPSHOT`. Add a `v` prefix and remove the `-SNAPSHOT` suffix for the next version tag:
+
+```shell
+git tag v0.1.9
+git push origin v0.1.9
+```
+
+Running `./gradlew -q currentVersion` again will print
+
+```
+Project version: 0.1.9
+```
+
+This is because the current commit is now on a version tag. The CI pipeline will publish this version when run.
+
+The next SNAPSHOT version (`0.1.10-SNAPSHOT` going with our example) will occur automatically when the main branch
+advances past this tag.
 
 ## Licensing
 

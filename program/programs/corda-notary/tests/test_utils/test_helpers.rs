@@ -20,7 +20,7 @@ pub fn generate_random_corda_tx_id() -> TxId {
 }
 
 pub fn deploy_notary_program(svm: &mut LiteSVM) {
-    let bytes = include_bytes!("../../../../target/deploy/corda_notary.so");
+    let bytes = include_bytes!("../../../../../target/deploy/corda_notary.so");
     let program_id = corda_notary::ID;
     svm.add_program(program_id, bytes);
 }

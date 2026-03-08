@@ -3,63 +3,63 @@ plugins {
     id("r3-artifactory")
 }
 
-tasks.register<Exec>("solanaClean") {
+val anchorClean = tasks.register<Exec>("anchorClean") {
     commandLine("anchor", "clean")
 }
 
 tasks.clean {
-    dependsOn("solanaClean")
+    dependsOn(anchorClean)
 }
 
-tasks.register<Exec>("solanaBuild") {
-    inputs.files("Cargo.toml", "programs/corda-notary/Cargo.toml")
+val anchorBuild = tasks.register<Exec>("anchorBuild") {
+    inputs.files("../Cargo.toml", "../Cargo.lock", "programs/corda-notary/Cargo.toml")
     inputs.dir("programs/corda-notary/src")
-    outputs.file("target/deploy/corda_notary.so")
+    outputs.file("../target/deploy/corda_notary.so")
     commandLine("anchor", "build", "--no-idl")
     environment("GRADLE_VERSION", version.toString())
 }
 
-tasks.register<Exec>("generateIdl") {
-    dependsOn("solanaBuild")
-    val idlFile = layout.buildDirectory.file("idl.json").get()
+val anchorIdl = tasks.register<Exec>("anchorIdl") {
+    dependsOn(anchorBuild)
+    val idlFile = layout.projectDirectory.file("target/idl/corda_notary.json")
     outputs.file(idlFile)
     commandLine("anchor", "idl", "build", "-o", idlFile)
     environment("GRADLE_VERSION", version.toString())
 }
 
 tasks.processResources {
-    from(tasks.named("solanaBuild")) {
+    from(anchorBuild) {
         into("net/corda/solana/notary/program")
     }
-    from(tasks.named("generateIdl")) {
+    from(anchorIdl) {
         into("net/corda/solana/notary/program")
     }
 }
 
-tasks.register<Exec>("compileSolanaTest") {
-    dependsOn("solanaBuild")
+val compileCargoTest = tasks.register<Exec>("compileCargoTest") {
+    dependsOn(anchorBuild)
     commandLine("cargo", "test", "--no-run")
 }
 
 tasks.testClasses {
-    dependsOn("compileSolanaTest")
+    dependsOn(compileCargoTest)
 }
 
-tasks.register<Exec>("solanaTest") {
-    dependsOn("compileSolanaTest")
+val cargoTest = tasks.register<Exec>("cargoTest") {
+    dependsOn(compileCargoTest)
     commandLine("cargo", "test")
 }
 
 tasks.test {
-    dependsOn("solanaTest")
+    dependsOn(cargoTest)
 }
 
-tasks.register<Exec>("rustfmtCheck") {
+val rustfmtCheck = tasks.register<Exec>("rustfmtCheck") {
     commandLine("cargo", "fmt", "--all", "--check")
 }
 
 tasks.check {
-    dependsOn("rustfmtCheck")
+    dependsOn(rustfmtCheck)
 }
 
 publishing {

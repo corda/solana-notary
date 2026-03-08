@@ -32,14 +32,14 @@ dependencies {
 }
 
 tasks.register<JavaExec>("generateKotlinClient") {
-    val generateIdlTask = project(":program").tasks.named("generateIdl")
-    dependsOn(generateIdlTask)
+    val anchorIdlTask = project(":program").tasks.named("anchorIdl")
+    dependsOn(anchorIdlTask)
     outputs.dir(generatedKotlinDir)
     classpath = sourceSets["codeGenerator"].runtimeClasspath
     mainClass = "net.corda.solana.notary.client.generator.EntryPointKt"
     doFirst {
         args(
-            generateIdlTask.get().outputs.files.singleFile,
+            anchorIdlTask.get().outputs.files.singleFile,
             generatedKotlinDir.get(),
             "net.corda.solana.notary.client"
         )
