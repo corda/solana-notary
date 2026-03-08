@@ -1,6 +1,7 @@
 plugins {
     id("pl.allegro.tech.build.axion-release") version "1.21.0"
     id("com.github.ben-manes.versions") version "0.53.0"
+    java
 }
 
 scmVersion {
@@ -13,4 +14,12 @@ scmVersion {
 // versions be set.
 allprojects {
     project.version = rootProject.scmVersion.version
+}
+
+val cargoClean = tasks.register<Exec>("cargoClean") {
+    commandLine("cargo", "clean")
+}
+
+tasks.clean {
+    dependsOn(cargoClean)
 }
