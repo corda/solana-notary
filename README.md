@@ -62,6 +62,12 @@ To run all the tests, including the Anchor tests in `program`:
 ./gradlew check
 ```
 
+To clean everything, including Rust/Anchor build artifacts:
+
+```shell
+./gradlew clean
+```
+
 ## Publishing a release
 
 The [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) is used for managing the version
