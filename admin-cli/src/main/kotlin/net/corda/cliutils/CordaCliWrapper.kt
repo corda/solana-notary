@@ -12,6 +12,7 @@ import picocli.CommandLine.Option
 import picocli.CommandLine.ParameterException
 import picocli.CommandLine.ParseResult
 import picocli.CommandLine.RunLast
+import software.sava.core.accounts.PublicKey
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.Locale
@@ -156,6 +157,7 @@ abstract class CordaCliWrapper(alias: String, description: String) : CliWrapperB
                 subCommand.commandSpec.usageMessage().description(it.description)
                 commandSpec.addSubcommand(it.alias, subCommand)
             }
+            registerConverter(PublicKey::class.java, PublicKey::fromBase58Encoded)
         }
     }
 

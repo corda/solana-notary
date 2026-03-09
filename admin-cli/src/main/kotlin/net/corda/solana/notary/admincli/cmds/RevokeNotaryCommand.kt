@@ -22,24 +22,17 @@ class RevokeNotaryCommand :
         description = ["The notary account base58 public key to revoke"],
         required = true
     )
-    private lateinit var notaryAddress: String
+    private lateinit var notaryAddress: PublicKey
 
     override fun runProgram(): Int {
         val solanaConfig = shared.toSolanaConfig()
-
-        solanaConfig.validateNotaryAddress(notaryAddress)
 
         println("Revoking notary $notaryAddress...")
 
         return try {
             solanaConfig.client.sendAndConfirm(
                 {
-                    it.createTransaction(
-                        RevokeNotary.instruction(
-                            PublicKey.fromBase58Encoded(notaryAddress),
-                            solanaConfig.wallet.publicKey()
-                        )
-                    )
+                    it.createTransaction(RevokeNotary.instruction(notaryAddress, solanaConfig.wallet.publicKey()))
                 },
                 solanaConfig.wallet
             )

@@ -21,18 +21,17 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
         description = ["The notary account base 58 public key to authorize"],
         required = true
     )
-    private lateinit var notaryAddress: String
+    private lateinit var notaryAddress: PublicKey
 
     @Option(
         names = ["--network", "-n"],
         description = ["The network ID to assign this notary to"],
         required = true
     )
-    private lateinit var networkId: String
+    private var networkId: Short = 0
 
     override fun runProgram(): Int {
         val solanaConfig = shared.toSolanaConfig()
-        solanaConfig.validateNotaryAddress(notaryAddress)
 
         println("Authorizing notary $notaryAddress...")
 
@@ -40,11 +39,7 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
             solanaConfig.client.sendAndConfirm(
                 {
                     it.createTransaction(
-                        AuthorizeNotary.instruction(
-                            PublicKey.fromBase58Encoded(notaryAddress),
-                            solanaConfig.wallet.publicKey(),
-                            networkId.toShort()
-                        )
+                        AuthorizeNotary.instruction(notaryAddress, solanaConfig.wallet.publicKey(), networkId)
                     )
                 },
                 solanaConfig.wallet

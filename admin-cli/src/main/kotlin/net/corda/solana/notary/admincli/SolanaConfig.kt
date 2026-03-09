@@ -46,7 +46,7 @@ fun String.toSolanaCommitment(): Commitment {
  * Configuration class for Solana blockchain operations.
  * Handles loading configuration from standard Solana CLI paths and initializing required components.
  */
-class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, websocketUrl: String?, commitment: Commitment?) {
+class SolanaConfig(private val keypairPath: Path?, rpcUrl: URI?, websocketUrl: URI?, commitment: Commitment?) {
     val config: SolanaConfigYml?
     val wallet: FileSigner
     val client: SolanaClient
@@ -64,21 +64,17 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, websocketU
     init {
         wallet = loadWalletFromFile()
         config = loadConfigFromFile()
-        val rpcUrl = requireNotNull(rpcUrl ?: config?.jsonRpcUrl) {
+        val rpcUrl = requireNotNull(rpcUrl ?: config?.jsonRpcUrl?.let { URI.create(it) }) {
             "Solana config file doesn't exist to determine RPC URL, and nor was it provided as a flag"
         }
-        val websocketUrl = requireNotNull(websocketUrl ?: config?.websocketUrl) {
+        val websocketUrl = requireNotNull(websocketUrl ?: config?.websocketUrl?.let { URI.create(it) }) {
             "Solana config file doesn't exist to determine websocket URL, and nor was it provided as a flag"
         }
         val commitment = requireNotNull(commitment ?: config?.commitment?.toSolanaCommitment()) {
             "Solana config file doesn't exist to determine commitment level, and nor was it provided as a flag"
         }
-        client = SolanaClient(URI.create(rpcUrl), URI.create(websocketUrl), commitment)
+        client = SolanaClient(rpcUrl, websocketUrl, commitment)
         client.start()
-    }
-
-    fun validateNotaryAddress(notaryAddress: String) {
-        require(notaryAddress.isNotBlank()) { "Notary address cannot be empty" }
     }
 
     /**
@@ -100,7 +96,7 @@ class SolanaConfig(private val keypairPath: String?, rpcUrl: String?, websocketU
      * Loads the wallet private key from the standard Solana CLI wallet file.
      */
     private fun loadWalletFromFile(): FileSigner {
-        val walletPath = keypairPath?.let { Paths.get(it) } ?: getDefaultWalletPath()
+        val walletPath = keypairPath ?: getDefaultWalletPath()
         if (!walletPath.exists()) {
             throw SolanaConfigurationException("Solana wallet file not found at: $walletPath")
         }

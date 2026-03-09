@@ -2,6 +2,8 @@ package net.corda.solana.notary.admincli
 
 import picocli.CommandLine.Option
 import software.sava.rpc.json.http.request.Commitment
+import java.net.URI
+import java.nio.file.Path
 
 class SharedCliOptions {
     @Option(
@@ -9,7 +11,7 @@ class SharedCliOptions {
         description = ["Optional: Path to the Admin Solana keypair file [default: ~/.config/solana/id.json]"],
         required = false
     )
-    var keypairPath: String? = null
+    var keypairPath: Path? = null
 
     @Option(
         names = ["--rpc"],
@@ -19,7 +21,7 @@ class SharedCliOptions {
         ],
         required = false
     )
-    var rpcUrl: String? = null
+    var rpcUrl: URI? = null
 
     @Option(
         names = ["--websocket"],
@@ -29,7 +31,7 @@ class SharedCliOptions {
         ],
         required = false
     )
-    var websocketUrl: String? = null
+    var websocketUrl: URI? = null
 
     @Option(
         names = ["--commitment", "-c"],
