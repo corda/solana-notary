@@ -1,5 +1,6 @@
 package net.corda.cliutils
 
+import com.r3.corda.lib.solana.core.FileSigner
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import picocli.CommandLine
@@ -158,6 +159,7 @@ abstract class CordaCliWrapper(alias: String, description: String) : CliWrapperB
                 commandSpec.addSubcommand(it.alias, subCommand)
             }
             registerConverter(PublicKey::class.java, PublicKey::fromBase58Encoded)
+            registerConverter(FileSigner::class.java) { FileSigner.read(Paths.get(it)) }
         }
     }
 

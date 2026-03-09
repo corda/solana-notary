@@ -20,7 +20,6 @@ bucket4j = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4
 corda-solana-core = { module = "com.r3.corda.lib.solana:corda-solana-core", version.ref = "corda-solana" }
 corda-solana-testing = { module = "com.r3.corda.lib.solana:corda-solana-testing", version.ref = "corda-solana" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
-jackson-dataformat-yaml = { module = "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml", version.ref = "jackson" }
 jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }

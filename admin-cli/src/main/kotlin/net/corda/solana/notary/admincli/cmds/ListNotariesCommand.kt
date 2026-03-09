@@ -2,7 +2,7 @@ package net.corda.solana.notary.admincli.cmds
 
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.SharedCliOptions
+import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.CordaNotary.PROGRAM_ID
 import net.corda.solana.notary.client.accounts.Network
 import net.corda.solana.notary.client.accounts.NotaryAuthorization
@@ -17,18 +17,16 @@ class ListNotariesCommand : CliWrapperBase(
     "Returns the list of notaries registered on the Solana notary program"
 ) {
     @CommandLine.Mixin
-    var shared = SharedCliOptions()
+    var rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
-        val solanaConfig = shared.toSolanaConfig()
+        val client = rpcConfig.startClient()
 
-        val networkIds = solanaConfig
-            .client
+        val networkIds = client
             .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(Network.DISCRIMINATOR_FILTER))
             .map { Network.read(it.data).networkId }
 
-        val notariesByNetworkId = solanaConfig
-            .client
+        val notariesByNetworkId = client
             .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(NotaryAuthorization.DISCRIMINATOR_FILTER))
             .map { NotaryAuthorization.read(it.data) }
             .groupBy { it.networkId }

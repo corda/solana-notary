@@ -3,7 +3,8 @@ package net.corda.solana.notary.admincli.cmds
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.SharedCliOptions
+import net.corda.solana.notary.admincli.KeypairConfig
+import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.client.instructions.Initialize
 import picocli.CommandLine
@@ -13,18 +14,20 @@ import picocli.CommandLine
  */
 class InitializeCommand : CliWrapperBase("initialize", "Initializes the Corda Notary on Solana blockchain") {
     @CommandLine.Mixin
-    var shared = SharedCliOptions()
+    var keypairConfig = KeypairConfig()
+
+    @CommandLine.Mixin
+    var rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
-        val solanaConfig = shared.toSolanaConfig()
         println("Initializing notary program ${CordaNotary.PROGRAM_ID}...")
-
+        val client = rpcConfig.startClient()
         return try {
-            solanaConfig.client.sendAndConfirm(
-                { it.createTransaction(Initialize.instruction(solanaConfig.wallet.publicKey())) },
-                solanaConfig.wallet
+            client.sendAndConfirm(
+                { it.createTransaction(Initialize.instruction(keypairConfig.keypair.publicKey())) },
+                keypairConfig.keypair
             )
-            println("✓ Notary program initialized successfully with ${solanaConfig.wallet.publicKey()} as admin.")
+            println("✓ Notary program initialized successfully with ${keypairConfig.keypair.publicKey()} as admin.")
             ExitCodes.SUCCESS
         } catch (e: SolanaTransactionException) {
             System.err.println("✗ Notary program initialization transaction failed: ${e.message}")

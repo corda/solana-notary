@@ -14,8 +14,6 @@ dependencies {
     implementation(project(":kotlin-client"))
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
-    implementation(libs.jackson.dataformat.yaml)
-    implementation(libs.jackson.kotlin)
 
     runtimeOnly(libs.logback)
 

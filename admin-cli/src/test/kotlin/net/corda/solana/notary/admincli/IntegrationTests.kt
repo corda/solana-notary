@@ -118,7 +118,7 @@ class IntegrationTests {
                 admin.file.absolutePathString(),
                 "--rpc",
                 testValidator.rpcUrl().toString(),
-                "--websocket",
+                "--ws",
                 testValidator.websocketUrl().toString(),
                 "-c",
                 "CONFIRMED",

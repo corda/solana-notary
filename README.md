@@ -68,6 +68,12 @@ To clean everything, including Rust/Anchor build artifacts:
 ./gradlew clean
 ```
 
+To (re)generate the Kotlin client:
+
+```shell
+./gradlew kotlin-client:compileKotlin
+```
+
 ## Publishing a release
 
 The [axion-release-plugin](https://axion-release-plugin.readthedocs.io/en/latest/) is used for managing the version

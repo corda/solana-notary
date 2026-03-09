@@ -3,7 +3,8 @@ package net.corda.solana.notary.admincli.cmds
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.SharedCliOptions
+import net.corda.solana.notary.admincli.KeypairConfig
+import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.instructions.CreateNetwork
 import picocli.CommandLine
 
@@ -13,17 +14,19 @@ import picocli.CommandLine
 class CreateNetworkCommand :
     CliWrapperBase("create-network", "Creates a new Corda notary network on the Solana blockchain") {
     @CommandLine.Mixin
-    var shared = SharedCliOptions()
+    var keypairConfig = KeypairConfig()
+
+    @CommandLine.Mixin
+    var rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
-        val solanaConfig = shared.toSolanaConfig()
-
         println("Creating network ...")
+        val client = rpcConfig.startClient()
         return try {
-            val networkId = ShowNextAvailableNetworkIdCommand.getNextNetworkId(solanaConfig)
-            solanaConfig.client.sendAndConfirm(
-                { it.createTransaction(CreateNetwork.instruction(solanaConfig.wallet.publicKey(), networkId)) },
-                solanaConfig.wallet
+            val networkId = ShowNextAvailableNetworkIdCommand.getNextNetworkId(client)
+            client.sendAndConfirm(
+                { it.createTransaction(CreateNetwork.instruction(keypairConfig.keypair.publicKey(), networkId)) },
+                keypairConfig.keypair
             )
             println("✓ Corda network creation successful - network ID: $networkId")
             ExitCodes.SUCCESS

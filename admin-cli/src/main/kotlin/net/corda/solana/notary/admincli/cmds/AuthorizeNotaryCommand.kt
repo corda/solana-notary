@@ -3,7 +3,8 @@ package net.corda.solana.notary.admincli.cmds
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.SharedCliOptions
+import net.corda.solana.notary.admincli.KeypairConfig
+import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.instructions.AuthorizeNotary
 import picocli.CommandLine
 import picocli.CommandLine.Parameters
@@ -14,7 +15,10 @@ import software.sava.core.accounts.PublicKey
  */
 class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary account on the Solana notary program") {
     @CommandLine.Mixin
-    var shared = SharedCliOptions()
+    var keypairConfig = KeypairConfig()
+
+    @CommandLine.Mixin
+    var rpcConfig = RpcConfig()
 
     @Parameters(
         paramLabel = "NOTARY_ADDRESS",
@@ -31,18 +35,17 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
     private var networkId: Short? = null
 
     override fun runProgram(): Int {
-        val solanaConfig = shared.toSolanaConfig()
-
         println("Authorizing notary $notaryAddress...")
 
+        val client = rpcConfig.startClient()
         return try {
-            solanaConfig.client.sendAndConfirm(
+            client.sendAndConfirm(
                 {
                     it.createTransaction(
-                        AuthorizeNotary.instruction(notaryAddress, solanaConfig.wallet.publicKey(), networkId!!)
+                        AuthorizeNotary.instruction(notaryAddress, keypairConfig.keypair.publicKey(), networkId!!)
                     )
                 },
-                solanaConfig.wallet
+                keypairConfig.keypair
             )
             println("✓ Notary authorized successfully: $notaryAddress")
             ExitCodes.SUCCESS

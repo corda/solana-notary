@@ -3,7 +3,8 @@ package net.corda.solana.notary.admincli.cmds
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.SharedCliOptions
+import net.corda.solana.notary.admincli.KeypairConfig
+import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.instructions.RevokeNotary
 import picocli.CommandLine
 import picocli.CommandLine.Parameters
@@ -15,7 +16,10 @@ import software.sava.core.accounts.PublicKey
 class RevokeNotaryCommand :
     CliWrapperBase("revoke", "Revokes access for a notary account on the Solana notary program") {
     @CommandLine.Mixin
-    var shared = SharedCliOptions()
+    var keypairConfig = KeypairConfig()
+
+    @CommandLine.Mixin
+    var rpcConfig = RpcConfig()
 
     @Parameters(
         paramLabel = "NOTARY_ADDRESS",
@@ -25,16 +29,12 @@ class RevokeNotaryCommand :
     private lateinit var notaryAddress: PublicKey
 
     override fun runProgram(): Int {
-        val solanaConfig = shared.toSolanaConfig()
-
         println("Revoking notary $notaryAddress...")
-
+        val client = rpcConfig.startClient()
         return try {
-            solanaConfig.client.sendAndConfirm(
-                {
-                    it.createTransaction(RevokeNotary.instruction(notaryAddress, solanaConfig.wallet.publicKey()))
-                },
-                solanaConfig.wallet
+            client.sendAndConfirm(
+                { it.createTransaction(RevokeNotary.instruction(notaryAddress, keypairConfig.keypair.publicKey())) },
+                keypairConfig.keypair
             )
             println("✓ Notary revoked successfully: $notaryAddress")
             ExitCodes.SUCCESS
