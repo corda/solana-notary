@@ -6,21 +6,21 @@ import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
 import net.corda.solana.notary.client.instructions.RevokeNotary
 import picocli.CommandLine
-import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
 import software.sava.core.accounts.PublicKey
 
 /**
  * Command to revoke a notary account.
  */
 class RevokeNotaryCommand :
-    CliWrapperBase("revoke", "Revokes authorization for a notary account on the Solana notary program") {
+    CliWrapperBase("revoke", "Revokes access for a notary account on the Solana notary program") {
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 
-    @Option(
-        names = ["--address", "-a"],
-        description = ["The notary account base58 public key to revoke"],
-        required = true
+    @Parameters(
+        paramLabel = "NOTARY_ADDRESS",
+        index = "0",
+        description = ["The notary address (base 58) to revoke"],
     )
     private lateinit var notaryAddress: PublicKey
 

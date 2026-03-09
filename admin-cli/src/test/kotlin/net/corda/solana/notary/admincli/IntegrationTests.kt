@@ -74,8 +74,7 @@ class IntegrationTests {
         execCmd("create-network")
         execCmd("create-network")
 
-        // TODO there's no need for the -a flag
-        execCmd("authorize", "-a", notary1.publicKey(), "-n", "0")
+        execCmd("authorize", notary1.publicKey(), "0")
         commitRandomInputState(notary1, networkId = 0)
 
         // Try to commit from an unauthorised notary on a valid network
@@ -83,10 +82,10 @@ class IntegrationTests {
             .isInstanceOf(SolanaTransactionException::class.java)
             .hasMessageContaining("Error Code: AccountNotInitialized")
 
-        execCmd("authorize", "-a", notary2.publicKey(), "-n", "1")
+        execCmd("authorize", notary2.publicKey(), "1")
         commitRandomInputState(notary2, networkId = 1)
 
-        execCmd("revoke", "-a", notary2.publicKey())
+        execCmd("revoke", notary2.publicKey())
         assertThatThrownBy { commitRandomInputState(notary2, networkId = 1) }
             .isInstanceOf(SolanaTransactionException::class.java)
             .hasMessageContaining("Error Code: AccountNotInitialized")

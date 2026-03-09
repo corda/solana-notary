@@ -6,7 +6,7 @@ import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.SharedCliOptions
 import net.corda.solana.notary.client.instructions.AuthorizeNotary
 import picocli.CommandLine
-import picocli.CommandLine.Option
+import picocli.CommandLine.Parameters
 import software.sava.core.accounts.PublicKey
 
 /**
@@ -16,19 +16,19 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
     @CommandLine.Mixin
     var shared = SharedCliOptions()
 
-    @Option(
-        names = ["--address", "-a"],
-        description = ["The notary account base 58 public key to authorize"],
-        required = true
+    @Parameters(
+        paramLabel = "NOTARY_ADDRESS",
+        index = "0",
+        description = ["The notary address (base 58) to authorize"],
     )
     private lateinit var notaryAddress: PublicKey
 
-    @Option(
-        names = ["--network", "-n"],
+    @Parameters(
+        paramLabel = "NETWORK_ID",
+        index = "1",
         description = ["The network ID to assign this notary to"],
-        required = true
     )
-    private var networkId: Short = 0
+    private var networkId: Short? = null
 
     override fun runProgram(): Int {
         val solanaConfig = shared.toSolanaConfig()
@@ -39,7 +39,7 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
             solanaConfig.client.sendAndConfirm(
                 {
                     it.createTransaction(
-                        AuthorizeNotary.instruction(notaryAddress, solanaConfig.wallet.publicKey(), networkId)
+                        AuthorizeNotary.instruction(notaryAddress, solanaConfig.wallet.publicKey(), networkId!!)
                     )
                 },
                 solanaConfig.wallet
