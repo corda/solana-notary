@@ -11,8 +11,10 @@ import picocli.CommandLine.Mixin
 /**
  * Command to create a new Corda notary network.
  */
-class CreateNetworkCommand :
-    CliWrapperBase("create-network", "Creates a new Corda notary network on the Solana blockchain") {
+class CreateNetworkCommand : CliWrapperBase(
+    "create-network",
+    "Creates a new Corda network with the next available ID"
+) {
     @Mixin
     private val signingConfig = SigningConfig()
 
@@ -20,7 +22,7 @@ class CreateNetworkCommand :
     private val rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
-        val networkId = ShowNextAvailableNetworkIdCommand.getNextNetworkId(rpcConfig.client)
+        val networkId = rpcConfig.getRequiredAdministration().nextNetworkId
         return try {
             val sent = signingConfig.action(rpcConfig) { admin -> CreateNetwork.instruction(admin, networkId) }
             if (sent) {

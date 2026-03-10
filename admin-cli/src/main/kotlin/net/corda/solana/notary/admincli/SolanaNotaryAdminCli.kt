@@ -5,10 +5,9 @@ import net.corda.cliutils.ExitCodes
 import net.corda.cliutils.start
 import net.corda.solana.notary.admincli.cmds.AuthorizeNotaryCommand
 import net.corda.solana.notary.admincli.cmds.CreateNetworkCommand
+import net.corda.solana.notary.admincli.cmds.InfoCommand
 import net.corda.solana.notary.admincli.cmds.InitializeCommand
-import net.corda.solana.notary.admincli.cmds.ListNotariesCommand
 import net.corda.solana.notary.admincli.cmds.RevokeNotaryCommand
-import net.corda.solana.notary.admincli.cmds.ShowNextAvailableNetworkIdCommand
 import net.corda.solana.notary.client.CordaNotary
 import picocli.CommandLine.Command
 
@@ -24,9 +23,8 @@ class SolanaNotaryAdminCli : CordaCliWrapper(
         InitializeCommand(),
         AuthorizeNotaryCommand(),
         RevokeNotaryCommand(),
-        ListNotariesCommand(),
+        InfoCommand(),
         CreateNetworkCommand(),
-        ShowNextAvailableNetworkIdCommand()
     )
 
     override fun runProgram(): Int {

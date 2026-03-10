@@ -1,7 +1,10 @@
 package net.corda.solana.notary.admincli
 
 import com.r3.corda.lib.solana.core.SolanaClient
+import net.corda.solana.notary.client.accounts.Administration
+import net.corda.solana.notary.client.instructions.Initialize.administrationPda
 import picocli.CommandLine.Option
+import software.sava.rpc.json.http.client.SolanaRpcClient
 import software.sava.rpc.json.http.request.Commitment
 import java.net.URI
 
@@ -37,6 +40,17 @@ class RpcConfig {
 
     val client: SolanaClient by lazy {
         SolanaClient(rpcUrl, websocketUrl, commitment).apply { start() }
+    }
+
+    fun getAdministration(): Administration? {
+        return client
+            .call(SolanaRpcClient::getAccountInfo, administrationPda().publicKey())
+            .data
+            ?.let(Administration::read)
+    }
+
+    fun getRequiredAdministration(): Administration {
+        return checkNotNull(getAdministration()) { "Notary program has not been initialized" }
     }
 
     companion object {

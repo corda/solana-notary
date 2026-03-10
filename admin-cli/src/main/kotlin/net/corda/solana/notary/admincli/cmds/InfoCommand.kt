@@ -9,17 +9,26 @@ import net.corda.solana.notary.client.accounts.NotaryAuthorization
 import picocli.CommandLine.Mixin
 import software.sava.rpc.json.http.client.SolanaRpcClient
 
-/**
- * Command to list all notaries registered on the Solana notary program.
- */
-class ListNotariesCommand : CliWrapperBase(
-    "list-notaries",
-    "Returns the list of notaries registered on the Solana notary program"
+class InfoCommand : CliWrapperBase(
+    "info",
+    "Prints out information on the notary program"
 ) {
     @Mixin
     private val rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
+        println("Program ID: $PROGRAM_ID")
+
+        val administration = rpcConfig.getAdministration()
+        if (administration == null) {
+            println("Notary program has not been initialized")
+            return ExitCodes.SUCCESS
+        }
+
+        println("Admin: ${administration.admin}")
+        println("Next available network ID: ${administration.nextNetworkId}")
+        println()
+
         val networkIds = rpcConfig
             .client
             .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(Network.DISCRIMINATOR_FILTER))
