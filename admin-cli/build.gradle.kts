@@ -15,7 +15,7 @@ dependencies {
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
 
-    runtimeOnly(libs.logback)
+    runtimeOnly(libs.slf4j.simple)
 
     testImplementation(project(":testing"))
     testImplementation(libs.corda.solana.testing)

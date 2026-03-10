@@ -13,7 +13,7 @@ class RpcConfig {
         ],
         required = false
     )
-    var rpcUrl: URI = URI.create("https://api.mainnet.solana.com")
+    private var rpcUrl: URI = URI.create("https://api.mainnet.solana.com")
 
     @Option(
         names = ["--ws"],
@@ -23,21 +23,20 @@ class RpcConfig {
         ],
         required = false
     )
-    var websocketUrl: URI = toWebSocketUrl(rpcUrl)
+    private var websocketUrl: URI = toWebSocketUrl(rpcUrl)
 
     @Option(
         names = ["--commitment", "-c"],
         description = [
-            "The commitment level to wait for on the cluster",
+            "The commitment level to wait for on the cluster.",
+            $$"Options: ${COMPLETION-CANDIDATES}"
         ],
         required = false
     )
-    var commitment: Commitment = Commitment.FINALIZED
+    private var commitment: Commitment = Commitment.FINALIZED
 
-    fun startClient(): SolanaClient {
-        val client = SolanaClient(rpcUrl, websocketUrl, commitment)
-        client.start()
-        return client
+    val client: SolanaClient by lazy {
+        SolanaClient(rpcUrl, websocketUrl, commitment).apply { start() }
     }
 
     companion object {

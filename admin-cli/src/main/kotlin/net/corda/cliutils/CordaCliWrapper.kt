@@ -1,6 +1,8 @@
 package net.corda.cliutils
 
 import com.r3.corda.lib.solana.core.FileSigner
+import net.corda.solana.notary.admincli.Encoding
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import picocli.CommandLine
@@ -8,7 +10,6 @@ import picocli.CommandLine.Command
 import picocli.CommandLine.DefaultExceptionHandler
 import picocli.CommandLine.ExecutionException
 import picocli.CommandLine.Help
-import picocli.CommandLine.ITypeConverter
 import picocli.CommandLine.Option
 import picocli.CommandLine.ParameterException
 import picocli.CommandLine.ParseResult
@@ -16,17 +17,11 @@ import picocli.CommandLine.RunLast
 import software.sava.core.accounts.PublicKey
 import java.nio.file.Path
 import java.nio.file.Paths
-import java.util.Locale
 import java.util.concurrent.Callable
 import kotlin.system.exitProcess
 
 // Copied from Corda to avoid the dependency just for this.
 // TODO This is overkill, replace with vanilla picocli
-
-object ShellConstants {
-    const val RED = "\u001B[31m"
-    const val RESET = "\u001B[0m"
-}
 
 fun isOsWindows(): Boolean = System.getProperty("os.name").startsWith("Windows")
 
@@ -43,10 +38,8 @@ fun CordaCliWrapper.start(args: Array<String>) {
 
         override fun handleExecutionException(ex: ExecutionException, parseResult: ParseResult?): List<Any> {
             val throwable = ex.cause ?: ex
-            if (this@start.verbose || this@start.subCommands.any { it.verbose }) {
-                throwable.printStackTrace()
-            }
-            printError(throwable.message ?: "Use --verbose for more details")
+            System.err.println(throwable.message)
+            CliWrapperBase.logger.debug("", throwable)
             return listOf(ExitCodes.FAILURE)
         }
     }
@@ -84,7 +77,7 @@ fun CordaCliWrapper.start(args: Array<String>) {
 )
 abstract class CliWrapperBase(val alias: String, val description: String) : Callable<Int> {
     companion object {
-        private val logger by lazy { LoggerFactory.getLogger(CliWrapperBase::class.java) }
+        val logger: Logger by lazy { LoggerFactory.getLogger(CliWrapperBase::class.java) }
     }
 
     // Raw args are provided for use in logging - this is a lateinit var rather than a constructor parameter as the
@@ -92,44 +85,23 @@ abstract class CliWrapperBase(val alias: String, val description: String) : Call
     lateinit var args: Array<String>
 
     @Option(
-        names = ["-v", "--verbose", "--log-to-console"],
-        description = ["If set, prints logging to the console as well as to a file."]
-    )
-    var verbose: Boolean = false
-
-    @Option(
         names = ["--logging-level"],
-        completionCandidates = LoggingLevelConverter.LoggingLevels::class,
-        description = ["Enable logging at this level and higher. Possible values: \${COMPLETION-CANDIDATES}"],
-        converter = [LoggingLevelConverter::class]
+        description = [$$"Enable logging at this level and higher. Possible values: ${COMPLETION-CANDIDATES}"],
     )
     var loggingLevel: Level = Level.INFO
-
-    // This needs to be called before loggers (See: NodeStartup.kt:51 logger called by lazy, initLogging happens
-    // before). Node's logging is more rich. In corda configurations two properties, defaultLoggingLevel and
-    // consoleLogLevel, are usually used.
-    open fun initLogging(): Boolean {
-        System.setProperty("defaultLogLevel", specifiedLogLevel) // These properties are referenced from the XML config
-        // file.
-        if (verbose) {
-            System.setProperty("consoleLogLevel", specifiedLogLevel)
-        }
-        System.setProperty("log-path", Paths.get(".").toString())
-        return true
-    }
 
     // Override this function with the actual method to be run once all the arguments have been parsed. The return
     // number is the exit code to be returned
     abstract fun runProgram(): Int
 
-    override fun call(): Int {
-        initLogging()
-        logger.info("Application Args: ${args.joinToString(" ")}")
-        return runProgram()
+    fun initLogging() {
+        System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", loggingLevel.name.lowercase())
+        logger.debug("Args: ${args.joinToString(" ")}")
     }
 
-    val specifiedLogLevel: String by lazy {
-        System.getProperty("log4j2.level")?.lowercase(Locale.ENGLISH) ?: loggingLevel.name.lowercase(Locale.ENGLISH)
+    override fun call(): Int {
+        initLogging()
+        return runProgram()
     }
 }
 
@@ -140,10 +112,6 @@ abstract class CliWrapperBase(val alias: String, val description: String) : Call
  * see: https://picocli.info/#_reuse_combinations
  */
 abstract class CordaCliWrapper(alias: String, description: String) : CliWrapperBase(alias, description) {
-    companion object {
-        private val logger by lazy { LoggerFactory.getLogger(CordaCliWrapper::class.java) }
-    }
-
     protected open fun additionalSubCommands(): Set<CliWrapperBase> = emptySet()
 
     val cmd by lazy {
@@ -160,6 +128,7 @@ abstract class CordaCliWrapper(alias: String, description: String) : CliWrapperB
             }
             registerConverter(PublicKey::class.java, PublicKey::fromBase58Encoded)
             registerConverter(FileSigner::class.java) { FileSigner.read(Paths.get(it)) }
+            registerConverter(Encoding::class.java, Encoding::parse)
         }
     }
 
@@ -168,27 +137,11 @@ abstract class CordaCliWrapper(alias: String, description: String) : CliWrapperB
     }
 
     override fun call(): Int {
-        if (!initLogging()) {
-            return ExitCodes.FAILURE
-        }
-        logger.debug("Application Args: {}", args.joinToString(" "))
+        initLogging()
         return runProgram()
     }
 
     fun printHelp() = cmd.usage(System.out)
-}
-
-fun printError(message: String) = System.err.println("${ShellConstants.RED}$message${ShellConstants.RESET}")
-
-/**
- * Converter from String to slf4j logging Level.
- */
-class LoggingLevelConverter : ITypeConverter<Level> {
-    override fun convert(value: String): Level {
-        return Level.valueOf(value.uppercase())
-    }
-
-    class LoggingLevels : ArrayList<String>(Level.entries.map { it.toString() })
 }
 
 object ExitCodes {

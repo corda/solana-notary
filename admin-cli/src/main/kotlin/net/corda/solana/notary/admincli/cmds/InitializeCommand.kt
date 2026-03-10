@@ -3,31 +3,46 @@ package net.corda.solana.notary.admincli.cmds
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.KeypairConfig
 import net.corda.solana.notary.admincli.RpcConfig
-import net.corda.solana.notary.client.CordaNotary
+import net.corda.solana.notary.admincli.SigningConfig
 import net.corda.solana.notary.client.instructions.Initialize
-import picocli.CommandLine
+import picocli.CommandLine.Mixin
+import picocli.CommandLine.Option
+import software.sava.core.accounts.PublicKey
 
 /**
  * Command to initialize the Solana notary configuration.
  */
 class InitializeCommand : CliWrapperBase("initialize", "Initializes the Corda Notary on Solana blockchain") {
-    @CommandLine.Mixin
-    var keypairConfig = KeypairConfig()
+    @Mixin
+    private val signingConfig = SigningConfig()
 
-    @CommandLine.Mixin
-    var rpcConfig = RpcConfig()
+    @Mixin
+    private val rpcConfig = RpcConfig()
+
+    @Option(
+        names = ["--admin-address"],
+        description = [
+            "The admin address in base 58.",
+            "Cannot be used with --keypair.",
+        ],
+        required = false
+    )
+    private var adminAddress: PublicKey? = null
 
     override fun runProgram(): Int {
-        println("Initializing notary program ${CordaNotary.PROGRAM_ID}...")
-        val client = rpcConfig.startClient()
+        require(
+            (signingConfig.keypair != null && adminAddress == null) ||
+                (signingConfig.keypair == null && adminAddress != null)
+        ) {
+            "Either --keypair or --admin-address must be specified"
+        }
+        val adminAddress = adminAddress ?: signingConfig.keypair!!.publicKey()
         return try {
-            client.sendAndConfirm(
-                { it.createTransaction(Initialize.instruction(keypairConfig.keypair.publicKey())) },
-                keypairConfig.keypair
-            )
-            println("✓ Notary program initialized successfully with ${keypairConfig.keypair.publicKey()} as admin.")
+            val sent = signingConfig.action(adminAddress, Initialize.instruction(adminAddress), rpcConfig)
+            if (sent) {
+                println("✓ Notary program initialized successfully with $adminAddress as admin.")
+            }
             ExitCodes.SUCCESS
         } catch (e: SolanaTransactionException) {
             System.err.println("✗ Notary program initialization transaction failed: ${e.message}")

@@ -3,10 +3,10 @@ package net.corda.solana.notary.admincli.cmds
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import net.corda.cliutils.CliWrapperBase
 import net.corda.cliutils.ExitCodes
-import net.corda.solana.notary.admincli.KeypairConfig
 import net.corda.solana.notary.admincli.RpcConfig
+import net.corda.solana.notary.admincli.SigningConfig
 import net.corda.solana.notary.client.instructions.AuthorizeNotary
-import picocli.CommandLine
+import picocli.CommandLine.Mixin
 import picocli.CommandLine.Parameters
 import software.sava.core.accounts.PublicKey
 
@@ -14,11 +14,11 @@ import software.sava.core.accounts.PublicKey
  * Command to authorize a notary account.
  */
 class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary account on the Solana notary program") {
-    @CommandLine.Mixin
-    var keypairConfig = KeypairConfig()
+    @Mixin
+    private val signingConfig = SigningConfig()
 
-    @CommandLine.Mixin
-    var rpcConfig = RpcConfig()
+    @Mixin
+    private val rpcConfig = RpcConfig()
 
     @Parameters(
         paramLabel = "NOTARY_ADDRESS",
@@ -35,19 +35,13 @@ class AuthorizeNotaryCommand : CliWrapperBase("authorize", "Authorizes a notary 
     private var networkId: Short? = null
 
     override fun runProgram(): Int {
-        println("Authorizing notary $notaryAddress...")
-
-        val client = rpcConfig.startClient()
         return try {
-            client.sendAndConfirm(
-                {
-                    it.createTransaction(
-                        AuthorizeNotary.instruction(notaryAddress, keypairConfig.keypair.publicKey(), networkId!!)
-                    )
-                },
-                keypairConfig.keypair
-            )
-            println("✓ Notary authorized successfully: $notaryAddress")
+            val sent = signingConfig.action(rpcConfig) { admin ->
+                AuthorizeNotary.instruction(notaryAddress, admin, networkId!!)
+            }
+            if (sent) {
+                println("✓ Notary $notaryAddress successfully authorized")
+            }
             ExitCodes.SUCCESS
         } catch (e: SolanaTransactionException) {
             System.err.println("✗ Notary authorization transaction failed: ${e.message}")

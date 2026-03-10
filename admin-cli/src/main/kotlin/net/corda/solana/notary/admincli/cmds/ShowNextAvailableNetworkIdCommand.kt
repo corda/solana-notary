@@ -6,7 +6,7 @@ import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.accounts.Administration
 import net.corda.solana.notary.client.instructions.AuthorizeNotary.administrationPda
-import picocli.CommandLine
+import picocli.CommandLine.Mixin
 import software.sava.rpc.json.http.client.SolanaRpcClient
 
 /**
@@ -23,12 +23,11 @@ class ShowNextAvailableNetworkIdCommand : CliWrapperBase(
         }
     }
 
-    @CommandLine.Mixin
-    var rpcConfig = RpcConfig()
+    @Mixin
+    private val rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
-        val client = rpcConfig.startClient()
-        println("Next Network ID = ${getNextNetworkId(client)}")
+        println(getNextNetworkId(rpcConfig.client))
         return ExitCodes.SUCCESS
     }
 }

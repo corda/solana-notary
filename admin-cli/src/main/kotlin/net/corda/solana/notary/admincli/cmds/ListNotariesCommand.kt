@@ -6,7 +6,7 @@ import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.CordaNotary.PROGRAM_ID
 import net.corda.solana.notary.client.accounts.Network
 import net.corda.solana.notary.client.accounts.NotaryAuthorization
-import picocli.CommandLine
+import picocli.CommandLine.Mixin
 import software.sava.rpc.json.http.client.SolanaRpcClient
 
 /**
@@ -16,17 +16,17 @@ class ListNotariesCommand : CliWrapperBase(
     "list-notaries",
     "Returns the list of notaries registered on the Solana notary program"
 ) {
-    @CommandLine.Mixin
-    var rpcConfig = RpcConfig()
+    @Mixin
+    private val rpcConfig = RpcConfig()
 
     override fun runProgram(): Int {
-        val client = rpcConfig.startClient()
-
-        val networkIds = client
+        val networkIds = rpcConfig
+            .client
             .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(Network.DISCRIMINATOR_FILTER))
             .map { Network.read(it.data).networkId }
 
-        val notariesByNetworkId = client
+        val notariesByNetworkId = rpcConfig
+            .client
             .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(NotaryAuthorization.DISCRIMINATOR_FILTER))
             .map { NotaryAuthorization.read(it.data) }
             .groupBy { it.networkId }

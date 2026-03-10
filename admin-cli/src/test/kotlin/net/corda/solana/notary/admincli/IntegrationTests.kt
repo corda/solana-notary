@@ -1,6 +1,7 @@
 package net.corda.solana.notary.admincli
 
 import com.r3.corda.lib.solana.core.FileSigner
+import com.r3.corda.lib.solana.core.SolanaClient
 import com.r3.corda.lib.solana.core.SolanaTransactionException
 import com.r3.corda.lib.solana.core.SolanaUtils
 import com.r3.corda.lib.solana.testing.ConfigureValidator
@@ -8,20 +9,24 @@ import com.r3.corda.lib.solana.testing.SolanaTestClass
 import com.r3.corda.lib.solana.testing.SolanaTestValidator
 import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.client.instructions.Commit
+import net.corda.solana.notary.client.instructions.Initialize.administrationPda
 import net.corda.solana.notary.client.types.FlaggedU8
 import net.corda.solana.notary.client.types.StateRefGroup
 import net.corda.solana.notary.client.types.TxId
 import net.corda.solana.notary.testing.NotaryEnvironment
 import org.assertj.core.api.AssertionsForClassTypes.assertThat
 import org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy
-import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.MethodSource
 import software.sava.core.accounts.PublicKey
 import software.sava.core.accounts.Signer
 import software.sava.core.accounts.meta.AccountMeta
 import software.sava.core.encoding.ByteUtil
+import software.sava.core.tx.TransactionSkeleton.deserializeSkeleton
 import java.nio.file.Path
 import kotlin.experimental.or
 import kotlin.io.path.absolutePathString
@@ -54,6 +59,14 @@ class IntegrationTests {
             testValidator.accounts().airdropSol(signer.publicKey(), 10)
             return signer
         }
+
+        @JvmStatic
+        fun nullableEncoding(): List<Encoding?> = Encoding.entries + null
+    }
+
+    @AfterEach
+    fun refreshBlockhash(client: SolanaClient) {
+        client.getBlockhashInfo(forceFetch = true)
     }
 
     @Test
@@ -63,18 +76,28 @@ class IntegrationTests {
         assertThat(output).contains(System.getProperty("gradle.test.version"))
     }
 
-    @Test
-    fun `e2e initilisation, adding and removing notaries`() {
+    @MethodSource("nullableEncoding")
+    @ParameterizedTest
+    fun `e2e initilisation, adding and removing notaries`(encoding: Encoding?) {
         val notary1 = fundAccount()
         val notary2 = fundAccount()
 
-        execCmd("initialize")
+        try {
+            execCmd("initialize", encoding)
+        } catch (e: Exception) {
+            // Hacky way to get around the fact the notary program will already have been initialised by the first
+            // parameterised run.
+            val administration = administrationPda().publicKey()
+            if ("account Address { address: $administration, base: None } already in use" !in e.message!!) {
+                throw e
+            }
+        }
 
         // Create two Corda networks, with IDs 0 and 1 respectively
-        execCmd("create-network")
-        execCmd("create-network")
+        execCmd("create-network", encoding)
+        execCmd("create-network", encoding)
 
-        execCmd("authorize", notary1.publicKey(), "0")
+        execCmd("authorize", encoding, notary1.publicKey(), 0)
         commitRandomInputState(notary1, networkId = 0)
 
         // Try to commit from an unauthorised notary on a valid network
@@ -82,10 +105,10 @@ class IntegrationTests {
             .isInstanceOf(SolanaTransactionException::class.java)
             .hasMessageContaining("Error Code: AccountNotInitialized")
 
-        execCmd("authorize", notary2.publicKey(), "1")
+        execCmd("authorize", encoding, notary2.publicKey(), 1)
         commitRandomInputState(notary2, networkId = 1)
 
-        execCmd("revoke", notary2.publicKey())
+        execCmd("revoke", encoding, notary2.publicKey())
         assertThatThrownBy { commitRandomInputState(notary2, networkId = 1) }
             .isInstanceOf(SolanaTransactionException::class.java)
             .hasMessageContaining("Error Code: AccountNotInitialized")
@@ -98,35 +121,43 @@ class IntegrationTests {
             System.getProperty("gradle.test.shadowjar")
         )
         args.addAll(furtherArgs)
+        println(args.joinToString(" "))
         val process = ProcessBuilder(args).start()
         val exitCode = process.waitFor()
         val output = process.inputReader().readText()
         println("STDOUT> $output")
-        if (exitCode != 0) {
-            println("STDERR> ${process.errorReader().readText()}")
-            println()
-            fail<Unit> { "Cli failed with error code $exitCode" }
-        }
-        return output
+        check(exitCode == 0) { "cli failed with error code $exitCode: ${process.errorReader().readText()}" }
+        return output.trimEnd()
     }
 
-    private fun execCmd(cmd: String, vararg cmdArgs: Any): String {
+    private fun execCmd(cmd: String, encoding: Encoding?, vararg cmdArgs: Any) {
         val args = arrayListOf(cmd)
-        args.addAll(
-            listOf(
-                "-k",
-                admin.file.absolutePathString(),
-                "--rpc",
-                testValidator.rpcUrl().toString(),
-                "--ws",
-                testValidator.websocketUrl().toString(),
-                "-c",
-                "CONFIRMED",
-                "-v"
-            )
-        )
+        args += "--rpc"
+        args += testValidator.rpcUrl().toString()
+        args += "--ws"
+        args += testValidator.websocketUrl().toString()
+        args += "-c"
+        args += "CONFIRMED"
+        if (encoding != null) {
+            args += "--encoding"
+            args += encoding.toString()
+            if (cmd == "initialize") {
+                args += "--admin-address"
+                args += admin.publicKey().toString()
+            }
+        } else {
+            args += "-k"
+            args += admin.file.absolutePathString()
+        }
         cmdArgs.mapTo(args) { it.toString() }
-        return exec(*args.toTypedArray())
+        val output = exec(*args.toTypedArray())
+        if (encoding != null) {
+            // Manually send the transaction
+            testValidator.client().sendAndConfirm(
+                { deserializeSkeleton(encoding.decode(output)).createTransaction() },
+                admin
+            )
+        }
     }
 
     private fun commitRandomInputState(notary: Signer, networkId: Short) {
