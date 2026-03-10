@@ -88,7 +88,7 @@ abstract class CliWrapperBase(val alias: String, val description: String) : Call
         names = ["--logging-level"],
         description = [$$"Enable logging at this level and higher. Possible values: ${COMPLETION-CANDIDATES}"],
     )
-    var loggingLevel: Level = Level.INFO
+    var loggingLevel: Level = Level.WARN
 
     // Override this function with the actual method to be run once all the arguments have been parsed. The return
     // number is the exit code to be returned

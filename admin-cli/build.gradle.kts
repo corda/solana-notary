@@ -16,6 +16,7 @@ dependencies {
     implementation(libs.slf4j.api)
 
     runtimeOnly(libs.slf4j.simple)
+    runtimeOnly(libs.slf4j.jdk)
 
     testImplementation(project(":testing"))
     testImplementation(libs.corda.solana.testing)

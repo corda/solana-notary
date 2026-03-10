@@ -1,6 +1,7 @@
 package net.corda.solana.notary.admincli
 
 import com.r3.corda.lib.solana.core.FileSigner
+import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.client.accounts.Administration
 import net.corda.solana.notary.client.instructions.Initialize.administrationPda
 import picocli.CommandLine.Option
@@ -32,11 +33,12 @@ class SigningConfig {
     var encoding: Encoding? = null
 
     fun action(rpcConfig: RpcConfig, createInstruction: (PublicKey) -> Instruction): Boolean {
-        val admin = rpcConfig
+        val adminstrationBytes = rpcConfig
             .client
             .call(SolanaRpcClient::getAccountInfo, administrationPda().publicKey())
-            .let { Administration.read(it.data) }
-            .admin
+            .data
+        checkNotNull(adminstrationBytes) { "Notary program has not been initialized" }
+        val admin = Administration.read(adminstrationBytes).admin
         return action(admin, createInstruction(admin), rpcConfig)
     }
 
