@@ -9,11 +9,7 @@ import software.sava.core.tx.Transaction
 class SigningConfig {
     @Option(
         names = ["--keypair", "-k"],
-        description = [
-            "Keypair file of the admin authority.",
-            "Cannot be used with --encoding."
-        ],
-        required = false
+        description = ["Keypair file of the admin authority."],
     )
     var keypair: FileSigner? = null
 
@@ -22,9 +18,7 @@ class SigningConfig {
         description = [
             $$"Encode the transaction so that it can be sent separately. Options: ${COMPLETION-CANDIDATES}",
             "This is useful if the admin key is not immediately available or if it is a multisig wallet.",
-            "Cannot be used with --keypair.",
         ],
-        required = false
     )
     var encoding: Encoding? = null
 
@@ -34,9 +28,6 @@ class SigningConfig {
     }
 
     fun action(admin: PublicKey, instruction: Instruction, rpcConfig: RpcConfig): Boolean {
-        require((keypair != null && encoding == null) || (keypair == null && encoding != null)) {
-            "Either --keypair or --encoding must be specified"
-        }
         return if (encoding != null) {
             val transaction = Transaction.createTx(admin, instruction)
             println(encoding!!.encode(transaction.serialized()))
