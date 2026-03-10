@@ -3,7 +3,6 @@ package net.corda.solana.notary.admincli.cmds
 import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.admincli.SigningConfig
 import net.corda.solana.notary.client.instructions.CreateNetwork
-import picocli.CommandLine.ArgGroup
 import picocli.CommandLine.Command
 import picocli.CommandLine.Mixin
 import java.util.concurrent.Callable
@@ -16,8 +15,8 @@ import java.util.concurrent.Callable
     showDefaultValues = true,
 )
 class CreateNetworkCommand : Callable<Int> {
-    @ArgGroup(exclusive = true, multiplicity = "1")
-    private lateinit var signingConfig: SigningConfig
+    @Mixin
+    private val signingConfig = SigningConfig()
 
     @Mixin
     private val rpcConfig = RpcConfig()

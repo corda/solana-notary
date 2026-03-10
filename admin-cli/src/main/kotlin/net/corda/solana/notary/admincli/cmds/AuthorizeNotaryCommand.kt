@@ -3,7 +3,6 @@ package net.corda.solana.notary.admincli.cmds
 import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.admincli.SigningConfig
 import net.corda.solana.notary.client.instructions.AuthorizeNotary
-import picocli.CommandLine.ArgGroup
 import picocli.CommandLine.Command
 import picocli.CommandLine.Mixin
 import picocli.CommandLine.Parameters
@@ -17,8 +16,8 @@ import software.sava.core.accounts.PublicKey
     showDefaultValues = true,
 )
 class AuthorizeNotaryCommand : Runnable {
-    @ArgGroup(exclusive = true, multiplicity = "1")
-    private lateinit var signingConfig: SigningConfig
+    @Mixin
+    private val signingConfig = SigningConfig()
 
     @Mixin
     private val rpcConfig = RpcConfig()

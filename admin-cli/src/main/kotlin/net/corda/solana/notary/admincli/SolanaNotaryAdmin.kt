@@ -17,8 +17,8 @@ import picocli.CommandLine.Option
 import picocli.CommandLine.ParseResult
 import picocli.CommandLine.ScopeType
 import software.sava.core.accounts.PublicKey
-import java.nio.file.Paths
 import java.util.concurrent.Callable
+import kotlin.io.path.Path
 import kotlin.system.exitProcess
 
 @Command(
@@ -62,7 +62,7 @@ class SolanaNotaryAdmin : Callable<Int> {
         fun main(args: Array<String>) {
             val commandLine = CommandLine(SolanaNotaryAdmin())
                 .registerConverter(PublicKey::class.java, PublicKey::fromBase58Encoded)
-                .registerConverter(FileSigner::class.java) { FileSigner.read(Paths.get(it)) }
+                .registerConverter(FileSigner::class.java) { FileSigner.read(Path(it)) }
                 .registerConverter(Encoding::class.java, Encoding::parse)
                 .setExecutionExceptionHandler(ExceptionHandler())
             commandLine

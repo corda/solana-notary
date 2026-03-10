@@ -2,6 +2,7 @@ import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
     id("default-kotlin")
+    `kotlin-kapt`
     application
     alias(libs.plugins.shadow)
 }
@@ -11,6 +12,8 @@ application {
 }
 
 dependencies {
+    kapt(libs.picocli.codegen)
+
     implementation(project(":kotlin-client"))
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
@@ -20,6 +23,12 @@ dependencies {
 
     testImplementation(project(":testing"))
     testImplementation(libs.corda.solana.testing)
+}
+
+kapt {
+    arguments {
+        arg("project", "${project.group}/${project.name}")
+    }
 }
 
 tasks.jar {
