@@ -1,28 +1,31 @@
 package net.corda.solana.notary.admincli.cmds
 
-import net.corda.cliutils.CliWrapperBase
-import net.corda.cliutils.ExitCodes
 import net.corda.solana.notary.admincli.RpcConfig
 import net.corda.solana.notary.client.CordaNotary.PROGRAM_ID
 import net.corda.solana.notary.client.accounts.Network
 import net.corda.solana.notary.client.accounts.NotaryAuthorization
+import picocli.CommandLine.Command
 import picocli.CommandLine.Mixin
 import software.sava.rpc.json.http.client.SolanaRpcClient
 
-class InfoCommand : CliWrapperBase(
-    "info",
-    "Prints out information on the notary program"
-) {
+@Command(
+    name = "info",
+    description = ["Prints out information on the notary program"],
+    mixinStandardHelpOptions = true,
+    sortOptions = false,
+    showDefaultValues = true,
+)
+class InfoCommand : Runnable {
     @Mixin
     private val rpcConfig = RpcConfig()
 
-    override fun runProgram(): Int {
+    override fun run() {
         println("Program ID: $PROGRAM_ID")
 
         val administration = rpcConfig.getAdministration()
         if (administration == null) {
             println("Notary program has not been initialized")
-            return ExitCodes.SUCCESS
+            return
         }
 
         println("Admin: ${administration.admin}")
@@ -42,7 +45,7 @@ class InfoCommand : CliWrapperBase(
 
         // Get all networks
         for (networkId in networkIds) {
-            println("Network ID: $networkId")
+            println("Network: $networkId")
             val notaries = notariesByNetworkId[networkId]
             if (notaries != null) {
                 notaries.forEachIndexed { index, pda ->
@@ -52,7 +55,5 @@ class InfoCommand : CliWrapperBase(
                 println("  No notaries registered")
             }
         }
-
-        return ExitCodes.SUCCESS
     }
 }

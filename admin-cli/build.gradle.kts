@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass = "net.corda.solana.notary.admincli.SolanaNotaryAdminCliKt"
+    mainClass = "net.corda.solana.notary.admincli.SolanaNotaryAdmin"
 }
 
 dependencies {
@@ -29,8 +29,7 @@ tasks.jar {
 }
 
 val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
-    archiveClassifier.set("") // remove "-all"
-    archiveVersion.set("")
+    archiveFileName = "solana-notary-admin.jar"
 }
 
 tasks.build {

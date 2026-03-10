@@ -10,7 +10,7 @@ junit = "5.14.3"
 kotlin-corda = "1.9.25"
 kotlin-main = "2.2.20"
 kotlinpoet = "2.2.0"
-picocli = "3.9.6"
+picocli = "4.7.7"
 slf4j = "2.0.17"
 
 [libraries]
