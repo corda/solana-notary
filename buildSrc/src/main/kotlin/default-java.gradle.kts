@@ -32,5 +32,6 @@ tasks.withType<Test> {
         val tempDir = layout.buildDirectory.dir("junit-temp").get().asFile.toPath()
         Files.createDirectories(tempDir)
         systemProperty("java.io.tmpdir", tempDir)
+        systemProperty("junit.jupiter.execution.timeout.default", "2m")
     }
 }

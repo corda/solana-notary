@@ -1,0 +1,6 @@
+[
+    {
+        "name": "software.sava.rpc.json.http.client.SolanaRpcClient",
+        "allPublicMethods": true
+    }
+]

@@ -48,24 +48,37 @@ pipeline {
   }
 
   stages {
-    stage('Generate Local Wallet') {
-      steps {
-        sh 'solana-keygen new -f --no-bip39-passphrase'
-        sh 'solana config get'
-      }
-    }
-    stage('Test') {
-      steps {
-        sh './gradlew --no-daemon currentVersion'
-        sh './gradlew --no-daemon clean check'
-      }
-    }
-    stage('Publish') {
-      steps {
-        sh './gradlew --no-daemon artifactoryPublish'
+    stage('Parallel') {
+      parallel {
+        stage('Main') {
+          stages {
+            stage('Generate Local Wallet') {
+              steps {
+                sh 'solana-keygen new -f --no-bip39-passphrase'
+                sh 'solana config get'
+              }
+            }
+            stage('Test') {
+              steps {
+                sh './gradlew --no-daemon clean check -i -s'
+              }
+            }
+            stage('Publish') {
+              steps {
+                sh './gradlew --no-daemon artifactoryPublish'
+              }
+            }
+          }
+        }
+        stage('Current Version') {
+          steps {
+            sh './gradlew -q currentVersion'
+          }
+        }
       }
     }
   }
+
   post {
     always {
       junit '**/build/test-results/**/*.xml'

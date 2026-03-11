@@ -9,7 +9,6 @@ import com.r3.corda.lib.solana.testing.SolanaTestClass
 import com.r3.corda.lib.solana.testing.SolanaTestValidator
 import net.corda.solana.notary.client.CordaNotary
 import net.corda.solana.notary.client.instructions.Commit
-import net.corda.solana.notary.client.instructions.Initialize.administrationPda
 import net.corda.solana.notary.client.types.FlaggedU8
 import net.corda.solana.notary.client.types.StateRefGroup
 import net.corda.solana.notary.client.types.TxId
@@ -19,6 +18,7 @@ import org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.TestInfo
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -78,19 +78,22 @@ class IntegrationTests {
 
     @MethodSource("nullableEncoding")
     @ParameterizedTest
-    fun `e2e initilisation, adding and removing notaries`(encoding: Encoding?) {
+    fun `e2e initilisation, adding and removing notaries`(encoding: Encoding?, testInfo: TestInfo) {
+        val isFirstRun = testInfo.displayName.startsWith("[1]")
+
         val notary1 = fundAccount()
         val notary2 = fundAccount()
 
-        try {
-            execCmd("initialize", encoding)
-        } catch (e: Exception) {
+        if (isFirstRun) {
             // Hacky way to get around the fact the notary program will already have been initialised by the first
             // parameterised run.
-            val administration = administrationPda().publicKey()
-            if ("account Address { address: $administration, base: None } already in use" !in e.message!!) {
-                throw e
-            }
+            assertThat(execCmd("info", null)).isEqualTo(
+                "Program ID: ${CordaNotary.PROGRAM_ID}\nNotary program has not been initialized"
+            )
+            execCmd("initialize", encoding)
+            assertThat(execCmd("info", null)).isEqualTo(
+                "Program ID: ${CordaNotary.PROGRAM_ID}\nAdmin: ${admin.publicKey()}\nNext available network ID: 0"
+            )
         }
 
         // Create two Corda networks, with IDs 0 and 1 respectively
@@ -115,11 +118,13 @@ class IntegrationTests {
     }
 
     private fun exec(vararg furtherArgs: String): String {
-        val args = arrayListOf(
-            "${System.getProperty("java.home")}/bin/java",
-            "-jar",
-            System.getProperty("gradle.test.shadowjar")
-        )
+        val args = ArrayList<String>()
+        val binary = System.getProperty("gradle.test.bin")
+        if (binary.endsWith(".jar")) {
+            args += "${System.getProperty("java.home")}/bin/java"
+            args += "-jar"
+        }
+        args += binary
         args.addAll(furtherArgs)
         println(args.joinToString(" "))
         val process = ProcessBuilder(args).start()
@@ -130,7 +135,7 @@ class IntegrationTests {
         return output.trimEnd()
     }
 
-    private fun execCmd(cmd: String, encoding: Encoding?, vararg cmdArgs: Any) {
+    private fun execCmd(cmd: String, encoding: Encoding?, vararg cmdArgs: Any): String {
         val args = arrayListOf(cmd)
         args += "--rpc"
         args += testValidator.rpcUrl().toString()
@@ -146,8 +151,10 @@ class IntegrationTests {
                 args += admin.publicKey().toString()
             }
         } else {
-            args += "-k"
-            args += admin.file.absolutePathString()
+            if (cmd != "info") {
+                args += "-k"
+                args += admin.file.absolutePathString()
+            }
         }
         cmdArgs.mapTo(args) { it.toString() }
         val output = exec(*args.toTypedArray())
@@ -158,6 +165,7 @@ class IntegrationTests {
                 admin
             )
         }
+        return output
     }
 
     private fun commitRandomInputState(notary: Signer, networkId: Short) {
