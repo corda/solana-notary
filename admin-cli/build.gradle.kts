@@ -1,9 +1,16 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import java.nio.file.LinkOption.NOFOLLOW_LINKS
+import java.nio.file.Path
+import kotlin.io.path.createLinkPointingTo
+import kotlin.io.path.deleteExisting
+import kotlin.io.path.fileSize
+import kotlin.io.path.isRegularFile
 
 plugins {
     id("default-kotlin")
     `kotlin-kapt`
     application
+    alias(libs.plugins.graalvm)
     alias(libs.plugins.shadow)
 }
 
@@ -19,7 +26,6 @@ dependencies {
     implementation(libs.slf4j.api)
 
     runtimeOnly(libs.slf4j.simple)
-    runtimeOnly(libs.slf4j.jdk)
 
     testImplementation(project(":testing"))
     testImplementation(libs.corda.solana.testing)
@@ -31,24 +37,61 @@ kapt {
     }
 }
 
+graalvmNative {
+    testSupport = false
+    binaries {
+        named("main") {
+            javaLauncher = javaToolchains
+                .launcherFor {
+                    languageVersion = JavaLanguageVersion.of(25)
+                    vendor = JvmVendorSpec.GRAAL_VM
+                }
+                .map(::fixNativeImageSymLink)
+            imageName = "solana-notary-admin"
+            quickBuild = project.hasProperty("quickBuild")
+        }
+    }
+}
+
 tasks.jar {
     manifest {
         attributes["Implementation-Version"] = archiveVersion
     }
 }
 
-val shadowJarTask = tasks.named<ShadowJar>("shadowJar") {
+val shadowJar = tasks.named<ShadowJar>("shadowJar") {
     archiveFileName = "solana-notary-admin.jar"
 }
 
-tasks.build {
-    dependsOn(shadowJarTask)
-}
-
+// TODO CI tests the shadowJar as the build environment is missing required packages for native-image
 tasks.test {
-    dependsOn(shadowJarTask)
+    val isNativeImage = project.hasProperty("nativeImage")
+    dependsOn(if (isNativeImage) tasks.nativeCompile else shadowJar)
     systemProperty("gradle.test.version", version)
     doFirst {
-        systemProperty("gradle.test.shadowjar", shadowJarTask.get().archiveFile.get())
+        val binary = if (isNativeImage) tasks.nativeCompile.get().outputFile else shadowJar.get().archiveFile
+        systemProperty("gradle.test.bin", binary.get())
     }
+}
+
+// https://github.com/gradle/gradle/issues/28583
+private fun fixNativeImageSymLink(javaLauncher: JavaLauncher): JavaLauncher {
+    val binPath = javaLauncher.executablePath.asFile.toPath().parent
+    val svmBinPath = binPath.resolve("../lib/svm/bin")
+    fixSymlink(binPath.resolve("native-image"), svmBinPath.resolve("native-image"))
+    return javaLauncher
+}
+
+private fun fixSymlink(target: Path, source: Path) {
+    if (!source.isRegularFile(NOFOLLOW_LINKS)) {
+        logger.info("fixSymlink: expected is not regular, skip (expected: {})", source)
+        return
+    }
+    if (!target.isRegularFile(NOFOLLOW_LINKS) || target.fileSize() > 0) {
+        logger.info("fixSymlink: target is not regular or the file size > 0, skip (target: {})", target)
+        return
+    }
+    logger.info("fixSymlink: {} -> {}", target, source)
+    target.deleteExisting()
+    target.createLinkPointingTo(source)
 }

@@ -12,9 +12,7 @@ import org.slf4j.LoggerFactory
 import org.slf4j.event.Level
 import picocli.CommandLine
 import picocli.CommandLine.Command
-import picocli.CommandLine.IExecutionExceptionHandler
 import picocli.CommandLine.Option
-import picocli.CommandLine.ParseResult
 import picocli.CommandLine.ScopeType
 import software.sava.core.accounts.PublicKey
 import java.util.concurrent.Callable
@@ -50,6 +48,17 @@ class SolanaNotaryAdmin : Callable<Int> {
     @Suppress("unused")
     fun setLoggingLevel(level: Level) {
         System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", level.name.lowercase())
+
+        val julLevel = when (level) {
+            Level.TRACE -> java.util.logging.Level.ALL
+            Level.DEBUG -> java.util.logging.Level.FINE
+            Level.INFO -> java.util.logging.Level.INFO
+            Level.WARN -> java.util.logging.Level.WARNING
+            Level.ERROR -> java.util.logging.Level.SEVERE
+        }
+        val rootJulLogger = java.util.logging.Logger.getLogger("")
+        rootJulLogger.level = julLevel
+        rootJulLogger.handlers.forEach { it.level = julLevel }
     }
 
     override fun call(): Int {
@@ -64,24 +73,21 @@ class SolanaNotaryAdmin : Callable<Int> {
                 .registerConverter(PublicKey::class.java, PublicKey::fromBase58Encoded)
                 .registerConverter(FileSigner::class.java) { FileSigner.read(Path(it)) }
                 .registerConverter(Encoding::class.java, Encoding::parse)
-                .setExecutionExceptionHandler(ExceptionHandler())
             commandLine
                 .commandSpec
                 .usageMessage()
                 .description("CLI tool for admin operations on the Solana notary program (${CordaNotary.PROGRAM_ID})")
-            val exitCode = commandLine.execute(*args)
-            exitProcess(exitCode)
-        }
-    }
-
-    private class ExceptionHandler : IExecutionExceptionHandler {
-        override fun handleExecutionException(e: Exception, cmd: CommandLine, parseResult: ParseResult): Int {
-            System.err.println("✗ ${e.message}")
-            if (e is SolanaTransactionException) {
-                e.logMessages.forEach(System.err::println)
+            val exitCode = try {
+                commandLine.execute(*args)
+            } catch (t: Throwable) {
+                commandLine.err.println("${commandLine.colorScheme.errorText("ERROR:")} ${t.message}")
+                if (t is SolanaTransactionException) {
+                    t.logMessages.forEach(commandLine.err::println)
+                }
+                LoggerFactory.getLogger(SolanaNotaryAdmin::class.java).error("Aborted with error", t)
+                1
             }
-            LoggerFactory.getLogger(ExceptionHandler::class.java).debug("Aborted with error", e)
-            return 1
+            exitProcess(exitCode)
         }
     }
 }

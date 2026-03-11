@@ -52,7 +52,7 @@ will automatically spin up a `solana-test-validator` configured with the notary 
 ### [`admin-cli`](admin-cli/README.md)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](admin-cli/LICENSE)
 
-Admin CLI for managing the notary program.
+`solana-notary-admin` CLI for managing the notary program.
 
 ## Development
 
@@ -72,6 +72,14 @@ To (re)generate the Kotlin client:
 
 ```shell
 ./gradlew kotlin-client:compileKotlin
+```
+
+To build the `solana-notary-admin` CLI:
+
+```shell
+./gradlew admin-cli:nativeCompile
+cd admin-cli/build/native/nativeCompile
+./solana-notary-admin --help
 ```
 
 ## Publishing a release
