@@ -18,6 +18,13 @@ dependencies {
     runtimeOnly(project(":program"))
 }
 
+tasks.test {
+    dependsOn(tasks.jar)
+    doFirst {
+        systemProperty("gradle.test.jar", tasks.jar.get().archiveFile.get())
+    }
+}
+
 publishing {
     publications {
         getByName<MavenPublication>("mainPublication") {

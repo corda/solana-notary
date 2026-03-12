@@ -7,8 +7,7 @@ plugins {
 
 java {
     toolchain {
-        // TODO This should be 25
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
