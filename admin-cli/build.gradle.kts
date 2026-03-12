@@ -1,4 +1,3 @@
-import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import java.nio.file.LinkOption.NOFOLLOW_LINKS
 import java.nio.file.Path
 import kotlin.io.path.createLinkPointingTo
@@ -43,7 +42,7 @@ graalvmNative {
         named("main") {
             javaLauncher = javaToolchains
                 .launcherFor {
-                    languageVersion = JavaLanguageVersion.of(25)
+                    languageVersion = java.toolchain.languageVersion
                     vendor = JvmVendorSpec.GRAAL_VM
                 }
                 .map(::fixNativeImageSymLink)
@@ -59,17 +58,17 @@ tasks.jar {
     }
 }
 
-val shadowJar = tasks.named<ShadowJar>("shadowJar") {
+tasks.shadowJar {
     archiveFileName = "solana-notary-admin.jar"
 }
 
 // TODO CI tests the shadowJar as the build environment is missing required packages for native-image
 tasks.test {
     val isNativeImage = project.hasProperty("nativeImage")
-    dependsOn(if (isNativeImage) tasks.nativeCompile else shadowJar)
+    dependsOn(if (isNativeImage) tasks.nativeCompile else tasks.shadowJar)
     systemProperty("gradle.test.version", version)
     doFirst {
-        val binary = if (isNativeImage) tasks.nativeCompile.get().outputFile else shadowJar.get().archiveFile
+        val binary = if (isNativeImage) tasks.nativeCompile.get().outputFile else tasks.shadowJar.get().archiveFile
         systemProperty("gradle.test.bin", binary.get())
     }
 }

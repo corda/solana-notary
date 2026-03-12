@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
 plugins {
     id("corda-kotlin")
     `java-library`
@@ -46,12 +49,30 @@ tasks.register<JavaExec>("generateKotlinClient") {
     }
 }
 
+// No need for the code generator to be restricted to the older versions of Java and Kotlin
+tasks.named<KotlinCompile>("compileCodeGeneratorKotlin") {
+    val jdkVersion = java.toolchain.languageVersion.get()
+    compilerOptions {
+        languageVersion = null
+        apiVersion = null
+        jvmTarget = JvmTarget.fromTarget(jdkVersion.toString())
+        freeCompilerArgs.set(listOf("-Xjdk-release=$jdkVersion"))
+    }
+}
+
 tasks.compileKotlin {
     dependsOn("generateKotlinClient")
 }
 
 tasks.named<Jar>("sourcesJar") {
     dependsOn("generateKotlinClient")
+}
+
+tasks.test {
+    dependsOn(tasks.jar)
+    doFirst {
+        systemProperty("gradle.test.jar", tasks.jar.get().archiveFile.get())
+    }
 }
 
 publishing {

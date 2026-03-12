@@ -1,8 +1,21 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     id("default-kotlin")
+    id("corda-java")
+}
+
+// No need for the tests to be restricted to the older versions of Java and Kotlin
+tasks.compileTestKotlin {
+    val jdkVersion = java.toolchain.languageVersion.get()
+    compilerOptions {
+        languageVersion = null
+        apiVersion = null
+        jvmTarget = JvmTarget.fromTarget(jdkVersion.toString())
+        freeCompilerArgs.set(listOf("-Xjdk-release=$jdkVersion"))
+    }
 }
 
 kotlin {
