@@ -49,7 +49,7 @@ Testing library for writing JUnit tests which need the Solana notary. In contain
 [`SolanaNotaryExtension`](testing/src/main/kotlin/net/corda/solana/notary/testing/SolanaNotaryExtension.kt) which
 will automatically spin up a `solana-test-validator` configured with the notary program and ready to use.
 
-### [`admin-cli`](admin-cli/README.md)
+### `admin-cli`
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](admin-cli/LICENSE)
 
 `solana-notary-admin` CLI for managing the notary program.
@@ -93,8 +93,8 @@ via git tags. Run the following to get the current
 ```
 
 > [!NOTE]
-> This is the same version across all the modules. Tt is even included in the Anchor IDL of the notary program. This
-> is done by [dynamically setting](program/programs/corda-notary/build.rs) the `CARGO_PKG_VERSION` environment variable.
+> The version is included in the Anchor IDL of the notary program. This is done by
+> [dynamically setting](program/programs/corda-notary/build.rs) the `CARGO_PKG_VERSION` environment variable.
 
 Assuming the version is `0.1.9-SNAPSHOT`. Add a `v` prefix and remove the `-SNAPSHOT` suffix for the next version tag:
 
@@ -103,7 +103,7 @@ git tag v0.1.9
 git push origin v0.1.9
 ```
 
-Running `./gradlew -q currentVersion` again will print
+Running `./gradlew -q currentVersion` again will now print
 
 ```
 Project version: 0.1.9

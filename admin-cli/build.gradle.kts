@@ -66,6 +66,7 @@ tasks.shadowJar {
 tasks.test {
     val isNativeImage = project.hasProperty("nativeImage")
     dependsOn(if (isNativeImage) tasks.nativeCompile else tasks.shadowJar)
+    inputs.property("isNativeImage", isNativeImage)
     systemProperty("gradle.test.version", version)
     doFirst {
         val binary = if (isNativeImage) tasks.nativeCompile.get().outputFile else tasks.shadowJar.get().archiveFile
