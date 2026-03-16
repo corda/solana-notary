@@ -1,5 +1,7 @@
 plugins {
-    id("default-java")
+    // Even though this module has no classes, its publication must not have a JVM variant greater than 17, otherwise
+    // Corda-related projects are unable to consume it.
+    id("corda-java")
     id("r3-artifactory")
 }
 
