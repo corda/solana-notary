@@ -115,11 +115,11 @@ transaction signer as admin.
 
 **Accounts:**
 
-| Name             | Writable | Signer | Description                                  |
-|------------------|----------|--------|----------------------------------------------|
-| `admin`          | yes      | yes    | Payer and initial admin                      |
-| `administration` | yes      | no     | Administration PDA (created by this call)    |
-| `system_program` | no       | no     | Solana System Program                        |
+| Name             | Writable | Signer | Description                               |
+|------------------|----------|--------|-------------------------------------------|
+| `admin`          | ✅        | ✅      | Payer and initial admin                   |
+| `administration` | ✅        |        | Administration PDA (created by this call) |
+| `system_program` |          |        | Solana System Program                     |
 
 **Arguments:** none
 
@@ -135,11 +135,11 @@ Authorises a Corda notary address to submit `commit` transactions for a specific
 
 | Name             | Writable | Signer | Description                                                       |
 |------------------|----------|--------|-------------------------------------------------------------------|
-| `admin`          | yes      | yes    | Must match `administration.admin`                                 |
-| `administration` | no       | no     | Administration PDA                                                |
-| `authorization`  | yes      | no     | NotaryAuthorization PDA for `address_to_authorize` (created here) |
-| `network`        | no       | no     | The Network PDA for the target network                            |
-| `system_program` | no       | no     | Solana System Program                                             |
+| `admin`          | ✅        | ✅      | Must match `administration.admin`                                 |
+| `administration` |          |        | Administration PDA                                                |
+| `authorization`  | ✅        |        | NotaryAuthorization PDA for `address_to_authorize` (created here) |
+| `network`        |          |        | The Network PDA for the target network                            |
+| `system_program` |          |        | Solana System Program                                             |
 
 **Arguments:**
 
@@ -160,9 +160,9 @@ rent is returned to the admin.
 
 | Name             | Writable | Signer | Description                                                   |
 |------------------|----------|--------|---------------------------------------------------------------|
-| `admin`          | yes      | yes    | Must match `administration.admin`; receives reclaimed rent    |
-| `administration` | no       | no     | Administration PDA                                            |
-| `authorization`  | yes      | no     | NotaryAuthorization PDA for `address_to_revoke` (closed here) |
+| `admin`          | ✅        | ✅      | Must match `administration.admin`; receives reclaimed rent    |
+| `administration` |          |        | Administration PDA                                            |
+| `authorization`  | ✅        |        | NotaryAuthorization PDA for `address_to_revoke` (closed here) |
 
 **Arguments:**
 
@@ -183,12 +183,12 @@ assigned from `administration.next_network_id`, which is then incremented.
 
 **Accounts:**
 
-| Name             | Writable | Signer | Description                              |
-|------------------|----------|--------|------------------------------------------|
-| `admin`          | yes      | yes    | Must match `administration.admin`        |
-| `administration` | yes      | no     | Administration PDA (updated)             |
-| `network`        | yes      | no     | New Network PDA (created by this call)   |
-| `system_program` | no       | no     | Solana System Program                    |
+| Name             | Writable | Signer | Description                            |
+|------------------|----------|--------|----------------------------------------|
+| `admin`          | ✅        | ✅      | Must match `administration.admin`      |
+| `administration` | ✅        |        | Administration PDA (updated)           |
+| `network`        | ✅        |        | New Network PDA (created by this call) |
+| `system_program` |          |        | Solana System Program                  |
 
 **Arguments:** none
 
@@ -204,12 +204,12 @@ The core notarisation instruction. Atomically:
 
 **Accounts:**
 
-| Name             | Writable | Signer | Description                                                              |
-|------------------|----------|--------|--------------------------------------------------------------------------|
-| `notary`         | yes      | yes    | Must match `authorization.notary`; pays rent for new accounts            |
-| `authorization`  | no       | no     | NotaryAuthorization PDA for the calling notary                           |
-| `system_program` | no       | no     | Solana System Program                                                    |
-| *(remaining)*    | yes      | no     | `CordaTxAccount` PDAs — see below                                        |
+| Name             | Writable | Signer | Description                                                   |
+|------------------|----------|--------|---------------------------------------------------------------|
+| `notary`         | ✅        | ✅      | Must match `authorization.notary`; pays rent for new accounts |
+| `authorization`  |          |        | NotaryAuthorization PDA for the calling notary                |
+| `system_program` |          |        | Solana System Program                                         |
+| *(remaining)*    | ✅        |        | `CordaTxAccount` PDAs — see below                             |
 
 **Remaining accounts** must be provided in the following order:
 
