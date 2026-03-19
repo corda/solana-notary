@@ -26,7 +26,7 @@ repositories {
 }
 ```
 
-### [`program`](program/README.md)
+### [`program`](program)
 [![License](https://img.shields.io/badge/License-BUSL%201.1-orange.svg)](program/LICENSE)
 
 The on-chain Solana program written using Anchor. It has its own [Gradle build file](program/build.gradle.kts)
@@ -34,7 +34,7 @@ which hooks into the Anchor build process.
 
 The published Maven artifact is a Jar file containing the program .so binary and Anchor IDL file.
 
-### `kotlin-client`
+### [`kotlin-client`](kotlin-client)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](kotlin-client/LICENSE)
 
 Generated Kotlin client for the program targeting a forked version of [Sava](https://github.com/corda/sava).
@@ -42,14 +42,14 @@ Generated Kotlin client for the program targeting a forked version of [Sava](htt
 In terms of source code, this module only contains an Anchor IDL code generator. It is invoked before the Kotlin
 compilation phase, generating the client source code.
 
-### `testing`
+### [`testing`](testing)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](testing/LICENSE)
 
 Testing library for writing JUnit tests which need the Solana notary. In contains
 [`SolanaNotaryExtension`](testing/src/main/kotlin/net/corda/solana/notary/testing/SolanaNotaryExtension.kt) which
 will automatically spin up a `solana-test-validator` configured with the notary program and ready to use.
 
-### `admin-cli`
+### [`admin-cli`](admin-cli)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](admin-cli/LICENSE)
 
 `solana-notary-admin` CLI for managing the notary program.
