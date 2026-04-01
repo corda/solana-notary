@@ -2,7 +2,7 @@
 
 The Corda notary program is an on-chain Solana program, written using [Anchor](https://www.anchor-lang.com/), that
 tracks consumed [Corda](https://docs.r3.com/en/platform/corda/4.14/community/key-concepts-notaries.html) contract
-states. It acts as a single global double-spend registry that multiple Corda networks can delegate state tracking to.
+states. It acts as a single global double-spend registry that independent Corda networks can delegate state tracking to.
 
 ---
 
@@ -303,12 +303,11 @@ namespace enforced by including the `network_id` as a seed when deriving `CordaT
 PDA seeds: ["corda_tx", tx_id (32 bytes), network_id (u16 LE)]
 ```
 
-This means the same Corda transaction ID can exist independently across different networks without collision. State
-consumption in one network has no effect on any other.
+This means state consumption in one network has no effect on any other.
 
 Each notary is bound to exactly one network via its `NotaryAuthorization` account, which stores the `network_id`.
 The `commit` instruction reads `network_id` from the notary's authorization account and uses it to derive all
-`CordaTxAccount` addresses, ensuring a notary can only consume states within its own network.
+`CordaTxAccount` addresses, **ensuring a notary can only consume states within its own network**.
 
 ```
 Admin
@@ -323,8 +322,8 @@ Admin
 
 ## Corda Enterprise integration
 
-[Corda Enterprise](https://docs.r3.com/en/platform/corda/4.14/enterprise/notary/solana-notary.html) when configured
-as a Solana notary is the only client that calls the `commit` instruction.
+[Corda Enterprise](https://docs.r3.com/en/platform/corda/4.14/enterprise/notary/solana-notary.html) is the only
+client that calls the `commit` instruction (when configured as a Solana notary).
 
 ### Transaction ID hashing
 
