@@ -64,6 +64,11 @@ pipeline {
               }
             }
             stage('Publish') {
+              when {
+                allOf {
+                  not { changeRequest() }
+                }
+              }
               steps {
                 sh './gradlew --no-daemon artifactoryPublish'
               }
