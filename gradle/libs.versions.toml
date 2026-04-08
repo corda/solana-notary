@@ -2,7 +2,7 @@
 artifactory = "6.0.2"
 assertj = "3.27.7"
 bucket4j = "8.16.1"
-corda-solana = "1.0.0"
+corda-solana = "1.0.1"
 detekt = "2.0.0-alpha.2"
 guava = "33.5.0-jre"
 jackson = "2.21.0"
@@ -29,7 +29,7 @@ slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
 [plugins]
-graalvm = { id = "org.graalvm.buildtools.native", version = "0.11.5" }
-shadow = { id = "com.gradleup.shadow", version = "9.3.2" }
 axion-release = { id = "pl.allegro.tech.build.axion-release", version = "1.21.1" }
+graalvm = { id = "org.graalvm.buildtools.native", version = "1.0.0" }
+shadow = { id = "com.gradleup.shadow", version = "9.4.1" }
 versions = { id = "com.github.ben-manes.versions", version = "0.53.0" }
