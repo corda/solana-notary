@@ -11,6 +11,9 @@ kotlin-corda = "1.9.25"
 kotlin-main = "2.3.10"
 kotlinpoet = "2.2.0"
 picocli = "4.7.7"
+sava-core-j17 = "25.3.1-j17-1"
+sava-core-j25 = "25.3.2"
+sava-programs-j25 = "25.0.2"
 slf4j = "2.0.17"
 
 [libraries]

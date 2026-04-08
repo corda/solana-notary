@@ -17,6 +17,18 @@ application {
     mainClass = "net.corda.solana.notary.admincli.SolanaNotaryAdmin"
 }
 
+configurations {
+    all {
+        resolutionStrategy.force(
+            // TODO We have to use the Java 17 port of the RPC library as the SolanaClient relies on sendTransaction RPC
+            //  supporting negative maxRetries
+            "software.sava:sava-rpc:${libs.versions.sava.core.j17.get()}",
+            "software.sava:sava-core:${libs.versions.sava.core.j25.get()}",
+            "software.sava:solana-programs:${libs.versions.sava.programs.j25.get()}",
+        )
+    }
+}
+
 dependencies {
     kapt(libs.picocli.codegen)
 
