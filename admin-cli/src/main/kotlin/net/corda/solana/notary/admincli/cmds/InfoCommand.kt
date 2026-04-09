@@ -7,6 +7,13 @@ import net.corda.solana.notary.client.accounts.NotaryAuthorization
 import picocli.CommandLine.Command
 import picocli.CommandLine.Mixin
 import software.sava.rpc.json.http.client.SolanaRpcClient
+import java.lang.Thread.startVirtualThread
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors.newVirtualThreadPerTaskExecutor
 
 @Command(
     name = "info",
@@ -28,21 +35,37 @@ class InfoCommand : Runnable {
             return
         }
 
-        println("Admin: ${administration.admin}")
+        val admin = administration.admin
+
+        val httpClient = HttpClient.newBuilder().executor(newVirtualThreadPerTaskExecutor()).build()
+
+        val isSquadsFuture = httpClient
+            .sendAsync(
+                httpGet("https://4fnetmviidiqkjzenwxe66vgoa0soerr.lambda-url.us-east-1.on.aws/isSquad/$admin"),
+                HttpResponse.BodyHandlers.ofString()
+            )
+            .thenApply { it.body().contains("\"isSquad\":true") }
+
+        val networksFuture = async {
+            val networkIds = rpcConfig
+                .client
+                .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(Network.DISCRIMINATOR_FILTER))
+                .map { Network.read(it.data).networkId }
+
+            val notariesByNetworkId = rpcConfig
+                .client
+                .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(NotaryAuthorization.DISCRIMINATOR_FILTER))
+                .map { NotaryAuthorization.read(it.data) }
+                .groupBy { it.networkId }
+
+            Pair(networkIds, notariesByNetworkId)
+        }
+
+        println("Admin: ${admin}${if (isSquadsFuture.get()) " (multisig)" else ""}")
         println("Next available network ID: ${administration.nextNetworkId}")
         println()
 
-        val networkIds = rpcConfig
-            .client
-            .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(Network.DISCRIMINATOR_FILTER))
-            .map { Network.read(it.data).networkId }
-
-        val notariesByNetworkId = rpcConfig
-            .client
-            .call(SolanaRpcClient::getProgramAccounts, PROGRAM_ID, listOf(NotaryAuthorization.DISCRIMINATOR_FILTER))
-            .map { NotaryAuthorization.read(it.data) }
-            .groupBy { it.networkId }
-
+        val (networkIds, notariesByNetworkId) = networksFuture.get()
         // Get all networks
         for (networkId in networkIds) {
             println("Network: $networkId")
@@ -55,5 +78,19 @@ class InfoCommand : Runnable {
                 println("  No notaries registered")
             }
         }
+    }
+
+    private fun httpGet(url: String) = HttpRequest.newBuilder(URI.create(url)).GET().build()
+
+    private fun <T> async(task: () -> T): CompletableFuture<T> {
+        val future = CompletableFuture<T>()
+        startVirtualThread {
+            try {
+                future.complete(task())
+            } catch (t: Throwable) {
+                future.completeExceptionally(t)
+            }
+        }
+        return future
     }
 }

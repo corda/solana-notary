@@ -7,6 +7,7 @@ import picocli.CommandLine.Option
 import software.sava.rpc.json.http.client.SolanaRpcClient
 import software.sava.rpc.json.http.request.Commitment
 import java.net.URI
+import java.util.concurrent.Executors
 
 class RpcConfig {
     @Option(
@@ -39,7 +40,12 @@ class RpcConfig {
     private var commitment: Commitment = Commitment.FINALIZED
 
     val client: SolanaClient by lazy {
-        SolanaClient(rpcUrl, websocketUrl, commitment).apply { start() }
+        SolanaClient(
+            rpcUrl,
+            websocketUrl,
+            commitment,
+            userMainExecutor = Executors.newVirtualThreadPerTaskExecutor()
+        ).apply { start() }
     }
 
     fun getAdministration(): Administration? {

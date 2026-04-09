@@ -13,13 +13,19 @@ plugins {
     alias(libs.plugins.shadow)
 }
 
-application {
-    mainClass = "net.corda.solana.notary.admincli.SolanaNotaryAdmin"
+configurations {
+    all {
+        resolutionStrategy.force(
+            "software.sava:sava-rpc:${libs.versions.sava.core.j17.get()}",
+            "software.sava:sava-core:${libs.versions.sava.core.j17.get()}",
+        )
+    }
 }
 
 dependencies {
     kapt(libs.picocli.codegen)
 
+    implementation(libs.sava.clients.squads)
     implementation(project(":kotlin-client"))
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
@@ -34,6 +40,10 @@ kapt {
     arguments {
         arg("project", "${project.group}/${project.name}")
     }
+}
+
+application {
+    mainClass = "net.corda.solana.notary.admincli.SolanaNotaryAdmin"
 }
 
 graalvmNative {

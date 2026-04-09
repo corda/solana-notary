@@ -11,6 +11,8 @@ kotlin-corda = "1.9.25"
 kotlin-main = "2.3.10"
 kotlinpoet = "2.2.0"
 picocli = "4.7.7"
+sava-core-j17 = "25.3.1-j17-1"
+sava-idl-j25 = "25.10.15"
 slf4j = "2.0.17"
 
 [libraries]
@@ -25,6 +27,7 @@ junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit"
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
 picocli = { module = "info.picocli:picocli", version.ref = "picocli" }
 picocli-codegen = { module = "info.picocli:picocli-codegen", version.ref = "picocli" }
+sava-clients-squads = { module = "software.sava:idl-clients-squads", version.ref = "sava-idl-j25" }
 slf4j-api = { module = "org.slf4j:slf4j-api", version.ref = "slf4j" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4j" }
 
