@@ -2,7 +2,7 @@ package net.corda.solana.notary.client.generator
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.annotation.JsonTypeName
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 
 class AnchorIdl(
     val address: String,

@@ -1,12 +1,12 @@
 package net.corda.solana.notary.client.generator
 
-import com.fasterxml.jackson.databind.JsonNode
 import net.corda.solana.notary.client.generator.AnchorIdl.AnchorType
 import net.corda.solana.notary.client.generator.OutputModel.DefinedAccount
 import net.corda.solana.notary.client.generator.OutputModel.Instruction
 import net.corda.solana.notary.client.generator.OutputModel.Type
 import software.sava.core.accounts.PublicKey
 import software.sava.core.programs.Discriminator
+import tools.jackson.databind.JsonNode
 
 class AnchorIdlParser(private val idl: AnchorIdl) {
     private val definedTypes = LinkedHashMap<String, Type.Defined>()
@@ -32,8 +32,8 @@ class AnchorIdlParser(private val idl: AnchorIdl) {
 
     private fun parseType(json: JsonNode): Type {
         return when {
-            json.isTextual -> Type.Native.valueOf(json.textValue())
-            json.has("defined") -> getDefinedType(json["defined"]["name"].textValue())
+            json.isString -> Type.Native.valueOf(json.stringValue())
+            json.has("defined") -> getDefinedType(json["defined"]["name"].stringValue())
             json.has("vec") -> Type.Vec(parseType(json["vec"]))
             else -> throw IllegalArgumentException(json.toString())
         }
@@ -53,9 +53,9 @@ class AnchorIdlParser(private val idl: AnchorIdl) {
             when {
                 fieldJson.has("name") -> {
                     Type.Defined.Field.Named(
-                        fieldJson["name"].textValue(),
+                        fieldJson["name"].stringValue(),
                         parseType(fieldJson["type"]!!),
-                        fieldJson["docs"]?.map { it.textValue() } ?: emptyList()
+                        fieldJson["docs"]?.values()?.map { it.stringValue() } ?: emptyList()
                     )
                 }
                 fieldJson.has("array") -> {

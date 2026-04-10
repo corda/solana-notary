@@ -5,7 +5,7 @@ bucket4j = "8.16.1"
 corda-solana = "1.0.1"
 detekt = "2.0.0-alpha.2"
 guava = "33.5.0-jre"
-jackson = "2.21.0"
+jackson = "3.1.1"
 junit = "5.14.3"
 kotlin-corda = "1.9.25"
 kotlin-main = "2.3.10"
@@ -19,7 +19,7 @@ bucket4j = { module = "com.bucket4j:bucket4j_jdk17-core", version.ref = "bucket4
 corda-solana-core = { module = "com.r3.corda.lib.solana:corda-solana-core", version.ref = "corda-solana" }
 corda-solana-testing = { module = "com.r3.corda.lib.solana:corda-solana-testing", version.ref = "corda-solana" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
-jackson-kotlin = { module = "com.fasterxml.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
+jackson-kotlin = { module = "tools.jackson.module:jackson-module-kotlin", version.ref = "jackson" }
 junit-api = { module = "org.junit.jupiter:junit-jupiter-api", version.ref = "junit" }
 junit-core = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit" }
 kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "kotlinpoet" }
