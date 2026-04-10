@@ -1,13 +1,12 @@
 package net.corda.solana.notary.client.generator
 
-import com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import net.corda.solana.notary.client.generator.SavaGenerator.Companion.ACCOUNTS_SUBPACKAGE
 import net.corda.solana.notary.client.generator.SavaGenerator.Companion.TYPES_SUBPACKAGE
+import tools.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.readValue
 import java.nio.file.Path
 import javax.annotation.processing.Generated
 import kotlin.io.path.Path
@@ -18,9 +17,7 @@ fun main(args: Array<String>) {
     val outputDir = Path(args[1]).createDirectories()
     val basePackage = args[2]
 
-    val anchorIdl = jacksonObjectMapper()
-        .configure(FAIL_ON_UNKNOWN_PROPERTIES, false)
-        .readValue<AnchorIdl>(idlFile.toFile())
+    val anchorIdl = jacksonObjectMapper().readValue<AnchorIdl>(idlFile.toFile())
     val model = AnchorIdlParser(anchorIdl).parse()
     val savaGenerator = SavaGenerator(model, basePackage)
 
