@@ -1,12 +1,12 @@
 package net.corda.solana.notary.admincli
 
+import net.corda.solana.notary.admincli.Utils.jsonMapperBuilder
 import software.sava.core.accounts.PublicKey
 import software.sava.core.encoding.Base58
 import tools.jackson.core.JsonParser
 import tools.jackson.databind.DeserializationContext
 import tools.jackson.databind.ValueDeserializer
 import tools.jackson.databind.module.SimpleModule
-import tools.jackson.module.kotlin.jacksonMapperBuilder
 import tools.jackson.module.kotlin.jacksonTypeRef
 import java.io.IOException
 import java.net.URI
@@ -32,10 +32,9 @@ class HeliusClient(private val httpClient: HttpClient, val cluster: Cluster, pri
             return HeliusClient(httpClient, cluster, apiKey)
         }
 
-        private val mapper = jacksonMapperBuilder()
+        private val mapper = jsonMapperBuilder()
             .addModule(
                 SimpleModule().also {
-                    it.addDeserializer(PublicKey::class.java, PublicKeyDeserializer())
                     it.addDeserializer(ByteArray::class.java, Base58Deserializer())
                 }
             )
@@ -70,38 +69,14 @@ class HeliusClient(private val httpClient: HttpClient, val cluster: Cluster, pri
     data class InstructionJson(
         val programId: PublicKey,
         val accounts: List<PublicKey>,
-        val data: ByteArray,
         val innerInstructions: List<InnerInstructionJson>,
-    ) {
-        override fun equals(other: Any?): Boolean {
-            if (other !is InstructionJson) return false
-            if (programId != other.programId) return false
-            if (accounts != other.accounts) return false
-            if (!data.contentEquals(other.data)) return false
-            if (innerInstructions != other.innerInstructions) return false
-            return true
-        }
-
-        override fun hashCode(): Int {
-            var result = programId.hashCode()
-            result = 31 * result + accounts.hashCode()
-            result = 31 * result + data.contentHashCode()
-            result = 31 * result + innerInstructions.hashCode()
-            return result
-        }
-    }
+    )
 
     data class InnerInstructionJson(val programId: PublicKey)
 
     enum class Cluster {
         Mainnet,
         Devnet,
-    }
-
-    private class PublicKeyDeserializer : ValueDeserializer<PublicKey>() {
-        override fun deserialize(p: JsonParser, ctxt: DeserializationContext): PublicKey {
-            return PublicKey.fromBase58Encoded(p.valueAsString)
-        }
     }
 
     private class Base58Deserializer : ValueDeserializer<ByteArray>() {

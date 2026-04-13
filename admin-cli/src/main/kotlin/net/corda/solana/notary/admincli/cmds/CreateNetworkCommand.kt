@@ -22,7 +22,7 @@ class CreateNetworkCommand : Callable<Int> {
     private val rpcConfig = RpcConfig()
 
     override fun call(): Int {
-        val networkId = rpcConfig.getRequiredAdministration().nextNetworkId
+        val networkId = rpcConfig.getAdministration().nextNetworkId
         val sent = signingConfig.action(rpcConfig) { admin -> CreateNetwork.instruction(admin, networkId) }
         if (sent) {
             println("✓ Corda network successfully created - network ID: $networkId")

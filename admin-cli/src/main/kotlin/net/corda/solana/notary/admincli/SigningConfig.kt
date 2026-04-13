@@ -27,7 +27,7 @@ class SigningConfig {
     var encoding: Encoding? = null
 
     fun action(rpcConfig: RpcConfig, createInstruction: (PublicKey) -> Instruction): Boolean {
-        val admin = rpcConfig.getRequiredAdministration().admin
+        val admin = rpcConfig.getAdministration().admin
         return action(admin, createInstruction(admin), rpcConfig)
     }
 

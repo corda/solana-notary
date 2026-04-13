@@ -50,15 +50,17 @@ class RpcConfig {
         ).apply { start() }
     }
 
-    fun getAdministration(): Administration? {
-        return client
+    private val _administration: Administration? by lazy {
+        client
             .call(SolanaRpcClient::getAccountInfo, administrationPda().publicKey())
             .data
             ?.let(Administration::read)
     }
 
-    fun getRequiredAdministration(): Administration {
-        return checkNotNull(getAdministration()) { "Notary program has not been initialized" }
+    fun getOptionalAdministration(): Administration? = _administration
+
+    fun getAdministration(): Administration {
+        return checkNotNull(getOptionalAdministration()) { "Notary program has not been initialized" }
     }
 
     companion object {
