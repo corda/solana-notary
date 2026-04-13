@@ -40,10 +40,12 @@ class RpcConfig {
     private var commitment: Commitment = Commitment.FINALIZED
 
     val client: SolanaClient by lazy {
+        val defaultRateLimit = if (rpcUrl.host.endsWith(".solana.com")) 4 else null
         SolanaClient(
             rpcUrl,
             websocketUrl,
             commitment,
+            defaultRateLimit = defaultRateLimit,
             userMainExecutor = Executors.newVirtualThreadPerTaskExecutor()
         ).apply { start() }
     }

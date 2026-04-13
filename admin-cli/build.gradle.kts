@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":kotlin-client"))
     implementation(libs.picocli)
     implementation(libs.slf4j.api)
+    implementation(libs.jackson.kotlin)
 
     runtimeOnly(libs.slf4j.simple)
 
